@@ -1,0 +1,142 @@
+.department-card {
+  padding: 22px;
+
+  background-color: #ffffff;
+  border: 1px solid #e3eaf2;
+  border-radius: 18px;
+}
+
+/* Header */
+
+.department-card-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+
+  gap: 16px;
+}
+
+.department-card-header h3 {
+  margin: 0;
+
+  color: #0b2b4c;
+
+  font-size: 23px;
+  font-weight: 600;
+  line-height: 30px;
+}
+
+.department-card-header p {
+  margin: 2px 0 0;
+
+  color: #475467;
+
+  font-size: 17px;
+  line-height: 25px;
+}
+
+/* Menu */
+
+.department-card-menu {
+  width: 46px;
+  height: 46px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  flex-shrink: 0;
+
+  padding: 0;
+
+  border: 1px solid #e3eaf2;
+  border-radius: 12px;
+
+  background-color: #ffffff;
+  color: #6380a2;
+
+  cursor: pointer;
+}
+
+.department-card-menu:hover {
+  background-color: #f8fafc;
+}
+
+.department-card-menu svg {
+  width: 20px;
+  height: 20px;
+}
+
+/* Stats */
+
+.department-card-stats {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+
+  margin-top: 34px;
+}
+
+.department-stat {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+
+  gap: 3px;
+}
+
+.department-stat strong {
+  color: #0b2b4c;
+
+  font-size: 26px;
+  font-weight: 600;
+  line-height: 32px;
+}
+
+.department-stat span {
+  color: #475467;
+
+  font-size: 16px;
+  line-height: 24px;
+}
+
+.department-stat-active strong {
+  color: #0b8f55;
+}
+
+.department-stat-fingerprint strong {
+  color: #009cc4;
+}
+
+/* View Employees */
+
+.department-card-view {
+  height: 48px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  gap: 8px;
+
+  margin-top: 26px;
+
+  border: 1px solid #e3eaf2;
+  border-radius: 9px;
+
+  color: #6380a2;
+
+  font-size: 16px;
+  font-weight: 500;
+
+  text-decoration: none;
+}
+
+.department-card-view:hover {
+  background-color: #f8fafc;
+  color: #0b2b4c;
+}
+
+.department-card-view svg {
+  width: 18px;
+  height: 18px;
+}

@@ -7,7 +7,8 @@ import "bootstrap/dist/css/bootstrap.min.css";
 
 import App from "./app/App";
 import Providers from "./app/providers";
-import ErrorBoundary from "./components/common/ErrorBoundary";
+import ErrorBoundary from "./components/ErrorBoundary/ErrorBoundary";
+
 
 ReactDOM.createRoot(document.getElementById("root")).render(
   <React.StrictMode>

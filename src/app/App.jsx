@@ -1,6 +1,7 @@
 import { Navigate, Route, Routes } from "react-router-dom";
+import AppLayout from "../layout/AppLayout";
+import DepartmentManagement from "../features/departments/pages/DepartmentManagement";
 
-import AppLayout from "../components/layout/AppLayout";
 
 const DashboardPage = () => {
   return <h2>Dashboard</h2>;
@@ -8,10 +9,6 @@ const DashboardPage = () => {
 
 const EmployeesPage = () => {
   return <h2>Employees</h2>;
-};
-
-const DepartmentsPage = () => {
-  return <h2>Departments</h2>;
 };
 
 const BiometricsPage = () => {
@@ -46,7 +43,7 @@ const App = () => {
 
         <Route
           path="/departments"
-          element={<DepartmentsPage />}
+          element={<DepartmentManagement />}
         />
 
         <Route

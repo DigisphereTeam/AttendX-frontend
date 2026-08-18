@@ -1,0 +1,42 @@
+export const departments = [
+  {
+    id: 1,
+    name: "Engineering",
+    head: "Arjun Verma",
+    totalEmployees: 3,
+    activeEmployees: 3,
+    fingerprintRegistered: 3,
+  },
+  {
+    id: 2,
+    name: "Human Resources",
+    head: "Priya Menon",
+    totalEmployees: 2,
+    activeEmployees: 2,
+    fingerprintRegistered: 2,
+  },
+  {
+    id: 3,
+    name: "Sales & Marketing",
+    head: "Karthik Reddy",
+    totalEmployees: 2,
+    activeEmployees: 1,
+    fingerprintRegistered: 1,
+  },
+  {
+    id: 4,
+    name: "Finance",
+    head: "Sneha Iyer",
+    totalEmployees: 2,
+    activeEmployees: 2,
+    fingerprintRegistered: 1,
+  },
+  {
+    id: 5,
+    name: "Operations",
+    head: "Vikram Singh",
+    totalEmployees: 2,
+    activeEmployees: 2,
+    fingerprintRegistered: 1,
+  },
+];
