@@ -14,10 +14,6 @@ const TableToolbar = ({
   onClear,
   actions,
 }) => {
-  const hasActiveFilters = filters.some(
-    (filter) => values[filter.name]
-  );
-
   const handleChange = (name, value) => {
     onChange?.(name, value);
   };
@@ -112,7 +108,8 @@ const TableToolbar = ({
           return null;
         })}
 
-        {hasActiveFilters && onClear && (
+        {/* Clear button now always renders if onClear callback exists */}
+        {onClear && (
           <button
             type="button"
             className="toolbar-clear-button"

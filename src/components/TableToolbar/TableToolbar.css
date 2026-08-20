@@ -1,13 +1,10 @@
 .table-toolbar {
   width: 100%;
-
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 16px;
-
+  gap: 12px;
   padding: 16px;
-
   background: #ffffff;
   border: 1px solid #e4e7ec;
   border-radius: 10px;
@@ -16,10 +13,11 @@
 .table-toolbar-filters {
   display: flex;
   align-items: center;
-  flex-wrap: wrap;
+  flex-wrap: nowrap; /* Prevent items from wrapping to a second row */
   gap: 10px;
-
   flex: 1;
+  width: 100%;
+  overflow-x: auto; /* Adds clean scroll behavior on smaller viewports */
 }
 
 /* ================================
@@ -28,29 +26,21 @@
 
 .toolbar-search {
   position: relative;
-
-  width: 280px;
+  flex: 1 1 220px; /* Allows the search bar to shrink/grow dynamically */
+  min-width: 180px;
 }
 
 .toolbar-search input {
   width: 100%;
   height: 40px;
-
   padding: 0 14px 0 38px;
-
   border: 1px solid #d0d5dd;
   border-radius: 7px;
-
   outline: none;
-
   background: #ffffff;
   color: #344054;
-
   font-size: 13px;
-
-  transition:
-    border-color 0.2s ease,
-    box-shadow 0.2s ease;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
 }
 
 .toolbar-search input::placeholder {
@@ -66,14 +56,10 @@
   position: absolute;
   top: 50%;
   left: 13px;
-
   width: 16px;
   height: 16px;
-
   color: #98a2b3;
-
   transform: translateY(-50%);
-
   pointer-events: none;
 }
 
@@ -83,33 +69,25 @@
 
 .toolbar-select-wrapper {
   position: relative;
-
-  min-width: 160px;
+  flex: 0 1 145px; /* Compact width so all dropdowns stay on one line */
+  min-width: 125px;
 }
 
 .toolbar-select {
   width: 100%;
   height: 40px;
-
   appearance: none;
-
-  padding: 0 36px 0 13px;
-
+  padding: 0 28px 0 10px;
   border: 1px solid #d0d5dd;
   border-radius: 7px;
-
   outline: none;
-
   background: #ffffff;
   color: #344054;
-
   font-size: 13px;
-
   cursor: pointer;
-
-  transition:
-    border-color 0.2s ease,
-    box-shadow 0.2s ease;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
 }
 
 .toolbar-select:focus {
@@ -120,15 +98,11 @@
 .toolbar-select-icon {
   position: absolute;
   top: 50%;
-  right: 12px;
-
+  right: 10px;
   width: 15px;
   height: 15px;
-
   color: #667085;
-
   transform: translateY(-50%);
-
   pointer-events: none;
 }
 
@@ -138,31 +112,22 @@
 
 .toolbar-date-wrapper {
   position: relative;
-
-  min-width: 160px;
+  flex: 0 1 145px;
+  min-width: 125px;
 }
 
 .toolbar-date {
   width: 100%;
   height: 40px;
-
-  padding: 0 12px 0 36px;
-
+  padding: 0 10px 0 32px;
   border: 1px solid #d0d5dd;
   border-radius: 7px;
-
   outline: none;
-
   background: #ffffff;
   color: #344054;
-
   font-size: 13px;
-
   cursor: pointer;
-
-  transition:
-    border-color 0.2s ease,
-    box-shadow 0.2s ease;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
 }
 
 .toolbar-date:focus {
@@ -173,15 +138,11 @@
 .toolbar-date-icon {
   position: absolute;
   top: 50%;
-  left: 12px;
-
+  left: 10px;
   width: 15px;
   height: 15px;
-
   color: #667085;
-
   transform: translateY(-50%);
-
   pointer-events: none;
 }
 
@@ -191,27 +152,20 @@
 
 .toolbar-clear-button {
   height: 40px;
-
   display: inline-flex;
   align-items: center;
   gap: 6px;
-
-  padding: 0 12px;
-
+  padding: 0 14px;
   border: 1px solid #d0d5dd;
   border-radius: 7px;
-
   background: #ffffff;
   color: #475467;
-
   font-size: 13px;
   font-weight: 500;
-
   cursor: pointer;
-
-  transition:
-    background-color 0.2s ease,
-    border-color 0.2s ease;
+  flex-shrink: 0; /* Prevents the Clear button from squeezing */
+  white-space: nowrap;
+  transition: background-color 0.2s ease, border-color 0.2s ease;
 }
 
 .toolbar-clear-button:hover {
@@ -232,6 +186,7 @@
   display: flex;
   align-items: center;
   gap: 8px;
+  flex-shrink: 0;
 }
 
 /* ================================
@@ -239,40 +194,7 @@
 ================================ */
 
 @media (max-width: 991.98px) {
-  .table-toolbar {
-    align-items: stretch;
-    flex-direction: column;
-  }
-
   .table-toolbar-filters {
-    width: 100%;
-  }
-
-  .table-toolbar-actions {
-    width: 100%;
-  }
-
-  .toolbar-search {
-    flex: 1;
-    min-width: 220px;
-  }
-}
-
-@media (max-width: 575.98px) {
-  .table-toolbar-filters {
-    flex-direction: column;
-    align-items: stretch;
-  }
-
-  .toolbar-search,
-  .toolbar-select-wrapper,
-  .toolbar-date-wrapper {
-    width: 100%;
-    min-width: 100%;
-  }
-
-  .toolbar-clear-button {
-    width: 100%;
-    justify-content: center;
+    flex-wrap: wrap; /* Re-enables wrapping on small screen sizes */
   }
 }

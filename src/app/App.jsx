@@ -1,27 +1,13 @@
 import { Navigate, Route, Routes } from "react-router-dom";
 import AppLayout from "../layout/AppLayout";
 import DepartmentManagement from "../features/departments/pages/DepartmentManagement";
-
-
-const DashboardPage = () => {
-  return <h2>Dashboard</h2>;
-};
-
-const EmployeesPage = () => {
-  return <h2>Employees</h2>;
-};
-
-const BiometricsPage = () => {
-  return <h2>Biometrics</h2>;
-};
-
-const AttendancePage = () => {
-  return <h2>Attendance</h2>;
-};
-
-const AttendanceHistoryPage = () => {
-  return <h2>Attendance History</h2>;
-};
+import DepartmentEmployees from "../features/departments/pages/DepartmentEmployees";
+import EmployeeManagement from "../features/employees/pages/EmployeeManagement";
+import EmployeeDetails from "../features/employees/pages/EmployeeDetails";
+import BiometricEnrollment from "../features/biometric/BiometricEnrollment";
+import AttendancePunch from "../features/biometric/AttendancePunch";
+import AttendanceHistory from "../features/biometric/AttendanceHistory";
+import Dashboard from "../features/dashboard/pages/Dashboard";
 
 const ReportsPage = () => {
   return <h2>Reports</h2>;
@@ -31,51 +17,27 @@ const App = () => {
   return (
     <Routes>
       <Route element={<AppLayout />}>
-        <Route
-          path="/dashboard"
-          element={<DashboardPage />}
-        />
+        <Route path="/dashboard" element={<Dashboard />} />
 
-        <Route
-          path="/employees"
-          element={<EmployeesPage />}
-        />
+        <Route path="/employees" element={<EmployeeManagement />} />
 
-        <Route
-          path="/departments"
-          element={<DepartmentManagement />}
-        />
+        <Route path="/departments" element={<DepartmentManagement />} />
 
-        <Route
-          path="/employees/profile"
-          element={<EmployeesPage />}
-        />
+        <Route path="/departments/:departmentId/employees" element={<DepartmentEmployees />} />
 
-        <Route
-          path="/biometrics"
-          element={<BiometricsPage />}
-        />
+        <Route path="/employees" element={<EmployeeManagement />} />
+        <Route path="/employees/:id" element={<EmployeeDetails />} />
 
-        <Route
-          path="/attendance"
-          element={<AttendancePage />}
-        />
+        <Route path="/biometrics" element={<BiometricEnrollment/>} />
 
-        <Route
-          path="/attendance/history"
-          element={<AttendanceHistoryPage />}
-        />
+        <Route path="/attendance" element={<AttendancePunch />} />
 
-        <Route
-          path="/reports"
-          element={<ReportsPage />}
-        />
+        <Route path="/attendance/history" element={<AttendanceHistory />} />
+
+        <Route path="/reports" element={<ReportsPage />} />
       </Route>
 
-      <Route
-        path="/"
-        element={<Navigate to="/dashboard" replace />}
-      />
+      <Route path="/" element={<Navigate to="/dashboard" replace />} />
     </Routes>
   );
 };

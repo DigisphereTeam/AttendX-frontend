@@ -1,40 +1,40 @@
 import { useEffect, useState } from "react";
 import { FiCalendar, FiClock, FiMenu } from "react-icons/fi";
 
-const pageMeta = {
-  "/dashboard": {
-    title: "Dashboard",
-    subtitle: "Welcome back, here's what's happening today.",
-  },
-  "/employees": {
-    title: "Employee Management",
-    subtitle: "Manage your organization's employee records.",
-  },
-  "/departments": {
-    title: "Department Management",
-    subtitle: "Organize employees by department.",
-  },
-  "/employees/profile": {
-    title: "Employee Profile",
-    subtitle: "View detailed employee information.",
-  },
-  "/biometrics": {
-    title: "Biometric Enrollment",
-    subtitle: "Register employee fingerprints for attendance.",
-  },
-  "/attendance": {
-    title: "Attendance",
-    subtitle: "Fingerprint-based punch in / punch out.",
-  },
-  "/attendance/history": {
-    title: "Attendance History",
-    subtitle: "Browse historical attendance records.",
-  },
-  "/reports": {
-    title: "Reports",
-    subtitle: "Daily and monthly attendance analytics.",
-  },
-};
+// const pageMeta = {
+//   "/dashboard": {
+//     title: "Dashboard",
+//     subtitle: "Welcome back, here's what's happening today.",
+//   },
+//   "/employees": {
+//     title: "Employee Management",
+//     subtitle: "Manage your organization's employee records.",
+//   },
+//   "/departments": {
+//     title: "Department Management",
+//     subtitle: "Organize employees by department.",
+//   },
+//   "/employees/profile": {
+//     title: "Employee Profile",
+//     subtitle: "View detailed employee information.",
+//   },
+//   "/biometrics": {
+//     title: "Biometric Enrollment",
+//     subtitle: "Register employee fingerprints for attendance.",
+//   },
+//   "/attendance": {
+//     title: "Attendance",
+//     subtitle: "Fingerprint-based punch in / punch out.",
+//   },
+//   "/attendance/history": {
+//     title: "Attendance History",
+//     subtitle: "Browse historical attendance records.",
+//   },
+//   "/reports": {
+//     title: "Reports",
+//     subtitle: "Daily and monthly attendance analytics.",
+//   },
+// };
 
 const Topbar = ({ onMenuClick, currentPath }) => {
   const [currentDate, setCurrentDate] = useState("");
@@ -65,8 +65,8 @@ const Topbar = ({ onMenuClick, currentPath }) => {
     return () => clearInterval(interval);
   }, []);
 
-  const meta =
-    pageMeta[currentPath] || pageMeta["/dashboard"];
+  // const meta =
+  //   pageMeta[currentPath] || pageMeta["/dashboard"];
 
   return (
     <header className="app-topbar">
@@ -80,7 +80,7 @@ const Topbar = ({ onMenuClick, currentPath }) => {
           <FiMenu />
         </button>
 
-        <div>
+        {/* <div>
           <h1 className="page-title">
             {meta.title}
           </h1>
@@ -88,7 +88,7 @@ const Topbar = ({ onMenuClick, currentPath }) => {
           <p className="page-subtitle">
             {meta.subtitle}
           </p>
-        </div>
+        </div> */}
       </div>
 
       <div className="topbar-right">

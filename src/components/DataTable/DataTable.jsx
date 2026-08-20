@@ -17,7 +17,7 @@ const DataTable = ({
                 <th
                   key={column.key}
                   className={column.headerClassName || ""}
-                  style={{ width: column.width }}
+                  style={{ width: column.width, minWidth: column.width }}
                 >
                   {column.header}
                 </th>
@@ -51,6 +51,7 @@ const DataTable = ({
                     <td
                       key={column.key}
                       className={column.cellClassName || ""}
+                      style={{ width: column.width, minWidth: column.width }}
                     >
                       {column.render
                         ? column.render(row, index)

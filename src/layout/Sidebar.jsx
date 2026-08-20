@@ -4,7 +4,6 @@ import {
   FiClock,
   FiGrid,
   FiLayers,
-  FiLogOut,
   FiUser,
   FiUsers,
   FiX,
@@ -34,11 +33,6 @@ const navigation = [
         path: "/departments",
         icon: FiLayers,
       },
-      {
-        label: "Employee Profile",
-        path: "/employees/profile",
-        icon: FiUser,
-      },
     ],
   },
   {
@@ -49,11 +43,11 @@ const navigation = [
         path: "/biometrics",
         icon: FiUser,
       },
-      {
-        label: "Attendance",
-        path: "/attendance",
-        icon: FiClock,
-      },
+      // {
+      //   label: "Attendance",
+      //   path: "/attendance",
+      //   icon: FiClock,
+      // },
       {
         label: "Attendance History",
         path: "/attendance/history",
@@ -79,17 +73,16 @@ const Sidebar = ({ isOpen, onClose }) => {
       <aside className={`app-sidebar ${isOpen ? "show" : ""}`}>
         <div className="sidebar-header">
           <div className="brand">
-            <div className="brand-logo">A</div>
-
+            <div className="brand-logo">D</div>
             <div className="brand-text">
-              <strong>AttendX</strong>
+              <strong>DigiLog</strong>
               <span>By Digisphere Tech</span>
             </div>
           </div>
 
           <button
             type="button"
-            className="sidebar-close d-lg-none"
+            className="sidebar-close"
             onClick={onClose}
             aria-label="Close sidebar"
           >
@@ -100,9 +93,7 @@ const Sidebar = ({ isOpen, onClose }) => {
         <nav className="sidebar-nav">
           {navigation.map((section) => (
             <div className="nav-section" key={section.label}>
-              <div className="nav-section-label">
-                {section.label}
-              </div>
+              <div className="nav-section-label">{section.label}</div>
 
               {section.items.map((item) => {
                 const Icon = item.icon;
@@ -128,7 +119,7 @@ const Sidebar = ({ isOpen, onClose }) => {
 
         <div className="sidebar-footer">
           <div>© 2026 Digisphere Tech</div>
-          <div>Attendance Suite v1.0</div>
+          {/* <div>Attendance Suite v1.0</div> */}
         </div>
       </aside>
 

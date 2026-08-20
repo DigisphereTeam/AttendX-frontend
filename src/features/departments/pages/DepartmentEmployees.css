@@ -1,0 +1,146 @@
+.department-employees {
+  width: 100%;
+}
+
+.department-employees-header {
+  margin-bottom: 24px;
+}
+
+.department-back-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+
+  margin: 12px 0px;
+
+  border: none;
+  background: transparent;
+
+  color: #667085;
+
+  font-size: 14px;
+  font-weight: 500;
+
+  cursor: pointer;
+}
+
+.department-back-button:hover {
+  color: #0464a4;
+}
+
+.department-back-button svg {
+  width: 17px;
+  height: 17px;
+}
+
+.department-employees-header h1 {
+  margin: 0;
+
+  color: #0b2b4c;
+
+  font-size: 24px;
+  font-weight: 600;
+  line-height: 32px;
+}
+
+.department-employees-header p {
+  margin: 4px 0 0;
+
+  color: #667085;
+
+  font-size: 15px;
+}
+
+/* Stats */
+
+.department-employee-stats {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+
+  gap: 20px;
+
+  margin-bottom: 24px;
+}
+
+/* Table Section */
+
+.department-employee-table-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  padding: 20px 24px;
+
+  border-bottom: 1px solid #eef2f6;
+}
+
+.department-employee-table-header h2 {
+  margin: 0;
+
+  color: #0b2b4c;
+
+  font-size: 18px;
+  font-weight: 600;
+}
+
+/* Employee Cell */
+
+.department-employee-cell {
+  display: flex;
+  align-items: center;
+
+  gap: 12px;
+}
+
+.department-employee-name {
+  display: block;
+
+  color: #101828;
+
+  font-size: 14px;
+  font-weight: 600;
+}
+
+/* Not Found */
+
+.department-employees-empty {
+  padding: 60px 20px;
+
+  text-align: center;
+}
+
+.department-employees-empty h2 {
+  margin-bottom: 16px;
+
+  color: #0b2b4c;
+}
+
+.department-employees-empty button {
+  padding: 10px 16px;
+
+  border: none;
+  border-radius: 8px;
+
+  background-color: #0464a4;
+  color: #ffffff;
+
+  cursor: pointer;
+}
+
+/* Responsive */
+
+@media (max-width: 900px) {
+  .department-employee-stats {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 600px) {
+  .department-employee-table-header {
+    padding: 16px;
+  }
+
+  .department-employees-header h1 {
+    font-size: 21px;
+  }
+}

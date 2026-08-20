@@ -1,43 +1,35 @@
-/* ========================================
-   APP LAYOUT
-======================================== */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
 
 .app-layout {
   min-height: 100vh;
   background: #f8f9fa;
 }
 
-/* ========================================
-   SIDEBAR
-======================================== */
-
+/* SIDEBAR */
 .app-sidebar {
   position: fixed;
   top: 0;
   left: 0;
   z-index: 1040;
-
   width: 260px;
   height: 100vh;
-
   display: flex;
   flex-direction: column;
-
-  background: #0a2647;
-  /* background: #057DCD; */
+  background: #034b7b;
   color: #ffffff;
-
   transition: transform 0.25s ease;
 }
 
 .sidebar-header {
   min-height: 76px;
   padding: 18px 20px;
-
   display: flex;
   align-items: center;
   justify-content: space-between;
-
   border-bottom: 1px solid rgba(255, 255, 255, 0.08);
 }
 
@@ -50,16 +42,12 @@
 .brand-logo {
   width: 38px;
   height: 38px;
-
   display: flex;
   align-items: center;
   justify-content: center;
-
   border-radius: 10px;
-
-  background: #057DCD;
+  background: #0464a4;
   color: #ffffff;
-
   font-size: 20px;
   font-weight: 700;
 }
@@ -76,16 +64,41 @@
 
 .brand-text span {
   margin-top: 3px;
-
   color: #b9cbe0;
   font-size: 10px;
 }
 
+/* AUTO-HIDING SCROLLBAR NAV */
 .sidebar-nav {
   flex: 1;
   overflow-y: auto;
-
+  overflow-x: hidden;
   padding: 18px 12px;
+  padding-right: 7px;
+  scrollbar-width: none; /* Firefox default hide */
+}
+
+.sidebar-nav::-webkit-scrollbar {
+  width: 0px; /* Webkit default hide */
+}
+
+/* Scrollbar reveals on hover */
+.sidebar-nav:hover {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, 0.3) transparent;
+}
+
+.sidebar-nav:hover::-webkit-scrollbar {
+  width: 5px;
+}
+
+.sidebar-nav:hover::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.sidebar-nav:hover::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.3);
+  border-radius: 10px;
 }
 
 .nav-section {
@@ -95,9 +108,7 @@
 .nav-section-label {
   padding: 0 12px;
   margin-bottom: 7px;
-
   color: #8fa8c2;
-
   font-size: 10px;
   font-weight: 700;
   letter-spacing: 0.08em;
@@ -106,23 +117,16 @@
 
 .sidebar-link {
   min-height: 42px;
-
   display: flex;
   align-items: center;
   gap: 11px;
   text-decoration: none;
-
   padding: 9px 12px;
-
   border-radius: 9px;
-
   color: #dbe6f5;
   font-size: 15px;
   font-weight: 500;
-
-  transition:
-    background-color 0.2s ease,
-    color 0.2s ease;
+  transition: background-color 0.2s ease, color 0.2s ease;
 }
 
 .sidebar-link:hover {
@@ -132,7 +136,7 @@
 
 .sidebar-link.active {
   color: #ffffff;
-  background: #057DCD;
+  background: #0464a4;
   font-weight: 600;
 }
 
@@ -143,46 +147,36 @@
 }
 
 .sidebar-footer {
-  padding: 15px 48px;
-
+  padding: 15px 20px;
   color: #8fa8c2;
-
   font-size: 12px;
   line-height: 1.6;
-
   border-top: 1px solid rgba(255, 255, 255, 0.08);
 }
 
 .sidebar-close {
+  display: none;
   border: 0;
   background: transparent;
   color: #ffffff;
-
   font-size: 22px;
+  cursor: pointer;
 }
 
-/* ========================================
-   MAIN
-======================================== */
-
+/* MAIN CONTENT */
 .app-main {
   min-height: 100vh;
   margin-left: 260px;
+  transition: margin-left 0.25s ease;
 }
 
-/* ========================================
-   TOPBAR
-======================================== */
-
+/* TOPBAR */
 .app-topbar {
   min-height: 76px;
-
   display: flex;
   align-items: center;
   justify-content: space-between;
-
   padding: 14px 28px;
-
   background: #ffffff;
   border-bottom: 1px solid #e4e7ec;
 }
@@ -193,9 +187,22 @@
   gap: 12px;
 }
 
+.sidebar-menu-button {
+  display: none;
+  width: 38px;
+  height: 38px;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid #e4e7ec;
+  border-radius: 8px;
+  background: #ffffff;
+  color: #344054;
+  font-size: 20px;
+  cursor: pointer;
+}
+
 .page-title {
   margin: 0;
-
   color: #101828;
   font-size: 20px;
   font-weight: 700;
@@ -203,7 +210,6 @@
 
 .page-subtitle {
   margin: 3px 0 0;
-
   color: #667085;
   font-size: 12px;
 }
@@ -215,9 +221,9 @@
 }
 
 .live-clock {
+  display: flex;
   align-items: center;
   gap: 8px;
-
   color: #667085;
   font-size: 12px;
 }
@@ -233,10 +239,6 @@
   height: 14px;
 }
 
-.clock-divider {
-  color: #d0d5dd;
-}
-
 .admin-profile {
   display: flex;
   align-items: center;
@@ -246,16 +248,12 @@
 .admin-avatar {
   width: 38px;
   height: 38px;
-
   display: flex;
   align-items: center;
   justify-content: center;
-
   border-radius: 50%;
-
   background: #e6f7fb;
   color: #008eaa;
-
   font-size: 12px;
   font-weight: 700;
 }
@@ -268,47 +266,20 @@
 
 .admin-role {
   margin-top: 2px;
-
   color: #667085;
   font-size: 10px;
 }
 
-/* ========================================
-   CONTENT
-======================================== */
-
 .app-content {
-  padding: 24px 28px;
+  padding: 20px;
 }
 
-/* ========================================
-   MOBILE
-======================================== */
-
-.sidebar-menu-button {
-  width: 38px;
-  height: 38px;
-
-  display: flex;
-  align-items: center;
-  justify-content: center;
-
-  border: 1px solid #e4e7ec;
-  border-radius: 8px;
-
-  background: #ffffff;
-  color: #344054;
-
-  font-size: 20px;
-}
-
+/* MOBILE RESPONSIVE RULES */
 .sidebar-overlay {
   position: fixed;
   inset: 0;
   z-index: 1030;
-
   display: none;
-
   background: rgba(10, 38, 71, 0.5);
 }
 
@@ -325,6 +296,14 @@
     transform: translateX(0);
   }
 
+  .sidebar-close {
+    display: block;
+  }
+
+  .sidebar-menu-button {
+    display: flex;
+  }
+
   .app-main {
     margin-left: 0;
   }
@@ -334,24 +313,6 @@
   }
 
   .app-content {
-    padding: 20px 18px;
-  }
-}
-
-@media (max-width: 575.98px) {
-  .page-title {
-    font-size: 17px;
-  }
-
-  .page-subtitle {
-    font-size: 11px;
-  }
-
-  .admin-info {
-    display: none;
-  }
-
-  .app-content {
-    padding: 16px;
+    padding: 12px;
   }
 }

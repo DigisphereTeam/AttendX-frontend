@@ -14,9 +14,6 @@ const axiosInstance = axios.create({
   },
 });
 
-
-// REQUEST INTERCEPTOR
-
 axiosInstance.interceptors.request.use(
   (config) => {
     const token = getToken();
@@ -34,8 +31,6 @@ axiosInstance.interceptors.request.use(
   },
   (error) => Promise.reject(error)
 );
-
-// RESPONSE INTERCEPTOR
 
 axiosInstance.interceptors.response.use(
   (response) => response,
