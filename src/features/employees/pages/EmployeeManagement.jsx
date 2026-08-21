@@ -12,6 +12,8 @@ import TableToolbar from "../../../components/TableToolbar/TableToolbar";
 import { employees as initialEmployees } from "../data/employeeData";
 import EmployeeModal from "./EmployeeModal";
 
+import { FaUsers, FaUserCheck, FaUserTimes, FaFingerprint } from "react-icons/fa";
+
 import "./EmployeeManagement.css";
 
 const PAGE_SIZE = 10;
@@ -264,7 +266,7 @@ const EmployeeManagement = () => {
   return (
     <div className="employee-management">
       {/* Page Header */}
-      <div className="employee-page-header">
+      <div className="department-content-header">
         <div>
           <h1>Employee Management</h1>
           <p>Manage your organization's employee records.</p>
@@ -277,16 +279,16 @@ const EmployeeManagement = () => {
       {/* Statistics */}
       <div className="row g-3 employee-statistics">
         <div className="col-12 col-sm-6 col-xl-3">
-          <StatCard title="Total Employees" value={statistics.total} />
+          <StatCard title="Total Employees" value={statistics.total} icon={FaUsers}/>
         </div>
         <div className="col-12 col-sm-6 col-xl-3">
-          <StatCard title="Active Employees" value={statistics.active} />
+          <StatCard title="Active Employees" value={statistics.active} icon={FaUserCheck}/>
         </div>
         <div className="col-12 col-sm-6 col-xl-3">
-          <StatCard title="Inactive Employees" value={statistics.inactive} />
+          <StatCard title="Inactive Employees" value={statistics.inactive} icon={FaUserTimes} />
         </div>
         <div className="col-12 col-sm-6 col-xl-3">
-          <StatCard title="Fingerprint Registered" value={statistics.fingerprintRegistered} />
+          <StatCard title="Fingerprint Registered" value={statistics.fingerprintRegistered} icon={FaFingerprint} />
         </div>
       </div>
 

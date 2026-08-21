@@ -8,7 +8,7 @@ import {
   Legend,
 } from "chart.js";
 import { Bar, Doughnut } from "react-chartjs-2";
-import { BsFingerprint } from "react-icons/bs";
+import { FaUsers, FaUserCheck, FaUserTimes, FaUserClock, FaFingerprint } from "react-icons/fa";
 
 import {
   statsData,
@@ -19,27 +19,33 @@ import {
 } from "../data/mockData";
 import "./Dashboard.css";
 import StatCard from "../../../components/StatCard/StatCard";
-
+import Avatar from "../../../components/Avatar/Avatar";
 
 ChartJS.register(CategoryScale, LinearScale, BarElement, ArcElement, Tooltip, Legend);
+
+// 4th Fix: Exact icon mapping matching image_8c05be
+const statIcons = [FaUsers, FaUserCheck, FaUserTimes, FaUserClock];
 
 const Dashboard = () => {
   return (
     <div className="dashboard-view">
+      {/* STATS ROW */}
       <div className="stats-grid">
-        {statsData.map((item, idx) => (
-          <StatCard
-            key={idx}
-            title={item.title}
-            value={item.value}
-            // icon={() => (
-            //   <div className="stat-icon-wrapper" style={{ backgroundColor: item.bg }}>
-            //     <item.Icon />
-            //   </div>
-            // )
-        // }
-          />
-        ))}
+        {statsData.map((item, idx) => {
+          const IconComponent = statIcons[idx % statIcons.length];
+          return (
+            <StatCard
+              key={idx}
+              title={item.title}
+              value={item.value}
+              icon={() => (
+                <div className="stat-icon-wrapper">
+                  <IconComponent className="stat-icon" />
+                </div>
+              )}
+            />
+          );
+        })}
       </div>
 
       {/* CHARTS ROW */}
@@ -63,16 +69,20 @@ const Dashboard = () => {
         <div className="card-box">
           <h3 className="card-heading">Department-wise Strength</h3>
           <p className="card-subtext">Employee distribution</p>
+          
+          {/* 3rd Fix: Wrapper centered flex layout */}
           <div className="doughnut-wrapper">
             <Doughnut
               data={deptStrengthData}
               options={{
                 responsive: true,
+                maintainAspectRatio: false,
                 cutout: "70%",
                 plugins: { legend: { display: false } },
               }}
             />
           </div>
+          
           <div className="dept-legend">
             {deptStrengthData.labels.map((lbl, idx) => (
               <div className="legend-item" key={idx}>
@@ -96,13 +106,14 @@ const Dashboard = () => {
           <div className="panel-header">
             <h3 className="card-heading">Today's Punch Activity</h3>
             <span className="live-badge">
-              <BsFingerprint /> Live Feed
+              <FaFingerprint /> Live Feed
             </span>
           </div>
           <div className="punch-feed">
             {punchFeed.map((item) => (
               <div key={item.id} className="punch-item">
-                <div className="avatar-sm">{item.initials}</div>
+                {/* 1st Fix: Avatar alongside aligned info wrapper */}
+                <Avatar name={item.name} src={item.avatarSrc} size="small" />
                 <div className="punch-info">
                   <strong>{item.name}</strong>
                   <p>{item.dept} • {item.time}</p>

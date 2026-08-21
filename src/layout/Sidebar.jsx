@@ -4,10 +4,11 @@ import {
   FiClock,
   FiGrid,
   FiLayers,
-  FiUser,
   FiUsers,
   FiX,
 } from "react-icons/fi";
+import { FaClipboardCheck, FaFingerprint } from "react-icons/fa";
+
 
 const navigation = [
   {
@@ -41,7 +42,7 @@ const navigation = [
       {
         label: "Biometric Enrollment",
         path: "/biometrics",
-        icon: FiUser,
+        icon: FaFingerprint,
       },
       // {
       //   label: "Attendance",
@@ -51,7 +52,7 @@ const navigation = [
       {
         label: "Attendance History",
         path: "/attendance/history",
-        icon: FiClock,
+        icon: FaClipboardCheck,
       },
     ],
   },
@@ -76,7 +77,7 @@ const Sidebar = ({ isOpen, onClose }) => {
             <div className="brand-logo">D</div>
             <div className="brand-text">
               <strong>DigiLog</strong>
-              <span>By Digisphere Tech</span>
+              <span>By Digisphere</span>
             </div>
           </div>
 

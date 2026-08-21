@@ -83,10 +83,10 @@ const EmployeeDetails = () => {
   return (
     <div className="employee-details-container p-4 bg-light min-vh-100">
       {/* Top Header replacing Select Dropdown with Direct Name and ID */}
-      <div className="mb-4">
-        <h4 className="fw-bold m-0 text-dark">
+      <div className="department-employees-header mb-4">
+        <h1 >
           {employee.name} ({employee.employeeId})
-        </h4>
+        </h1>
         <button
           type="button"
           className="department-back-button"

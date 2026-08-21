@@ -49,7 +49,7 @@ const EmployeeModal = ({
         <form className="modal-body" onSubmit={handleSubmit}>
           <div className="modal-content-scroll">
             {/* Employee ID */}
-            <div className="form-group">
+            {/* <div className="form-group">
               <label htmlFor="employeeId">Employee ID</label>
               <input
                 id="employeeId"
@@ -60,7 +60,7 @@ const EmployeeModal = ({
                 onChange={handleChange}
                 required
               />
-            </div>
+            </div> */}
 
             {/* Full Name */}
             <div className="form-group">

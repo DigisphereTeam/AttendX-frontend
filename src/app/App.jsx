@@ -8,10 +8,7 @@ import BiometricEnrollment from "../features/biometric/BiometricEnrollment";
 import AttendancePunch from "../features/biometric/AttendancePunch";
 import AttendanceHistory from "../features/biometric/AttendanceHistory";
 import Dashboard from "../features/dashboard/pages/Dashboard";
-
-const ReportsPage = () => {
-  return <h2>Reports</h2>;
-};
+import Reports from "../features/reports/pages/Reports";
 
 const App = () => {
   return (
@@ -34,7 +31,7 @@ const App = () => {
 
         <Route path="/attendance/history" element={<AttendanceHistory />} />
 
-        <Route path="/reports" element={<ReportsPage />} />
+        <Route path="/reports" element={<Reports/>} />
       </Route>
 
       <Route path="/" element={<Navigate to="/dashboard" replace />} />

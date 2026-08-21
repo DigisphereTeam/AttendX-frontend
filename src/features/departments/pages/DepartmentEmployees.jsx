@@ -1,5 +1,6 @@
 import { useMemo } from "react";
-import { FiArrowLeft, FiKey, FiUserCheck, FiUsers } from "react-icons/fi";
+import { FiArrowLeft, FiUserCheck, FiUsers } from "react-icons/fi";
+
 import { useNavigate, useParams } from "react-router-dom";
 
 import Avatar from "../../../components/Avatar/Avatar";
@@ -12,6 +13,7 @@ import { departments } from "../data/departmentData";
 import { departmentEmployees } from "../data/departmentEmployeeData";
 
 import "./DepartmentEmployees.css";
+import { FaFingerprint } from "react-icons/fa";
 
 const DepartmentEmployees = () => {
   const navigate = useNavigate();
@@ -127,7 +129,7 @@ const DepartmentEmployees = () => {
         <StatCard
           title="FP Registered"
           value={fingerprintRegistered}
-          icon={FiKey}
+          icon={FaFingerprint}
         />
       </div>
 

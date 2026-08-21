@@ -15,7 +15,7 @@
   top: 0;
   left: 0;
   z-index: 1040;
-  width: 260px;
+  width: 270px;
   height: 100vh;
   display: flex;
   flex-direction: column;
@@ -75,11 +75,11 @@
   overflow-x: hidden;
   padding: 18px 12px;
   padding-right: 7px;
-  scrollbar-width: none; /* Firefox default hide */
+  scrollbar-width: none; 
 }
 
 .sidebar-nav::-webkit-scrollbar {
-  width: 0px; /* Webkit default hide */
+  width: 0px; 
 }
 
 /* Scrollbar reveals on hover */

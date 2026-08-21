@@ -12,22 +12,6 @@
   margin-bottom: 24px;
 }
 
-.employee-page-header h1 {
-  margin: 0;
-  color: #0b2b4c;
-  font-size: 28px;
-  line-height: 36px;
-  font-weight: 600;
-}
-
-.employee-page-header p {
-  margin: 4px 0 0;
-  color: #667085;
-  font-size: 16px;
-  line-height: 24px;
-}
-
-
 .employee-statistics {
   margin-bottom: 24px;
 }
