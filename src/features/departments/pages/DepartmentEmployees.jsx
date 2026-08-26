@@ -9,37 +9,44 @@ import DataTable from "../../../components/DataTable/DataTable";
 import StatCard from "../../../components/StatCard/StatCard";
 import TablePagination from "../../../components/TablePagination/TablePagination";
 
-import { departments } from "../data/departmentData";
-import { departmentEmployees } from "../data/departmentEmployeeData";
-
 import "./DepartmentEmployees.css";
 import { FaFingerprint } from "react-icons/fa";
+import { useDepartments, useEmployeesByDepartment } from "../api/departmentApi";
+import LoadingSpinner from "../../../components/LoadingSpinner/LoadingSpinner";
 
 const DepartmentEmployees = () => {
   const navigate = useNavigate();
   const { departmentId } = useParams();
+  const {data: departments=[], isLoading: isDeptLoading} = useDepartments();
+  const {data: employees=[], isLoading: isEmpLoading, isError} = useEmployeesByDepartment(departmentId);
 
   const department = departments.find(
-    (item) => String(item.id) === departmentId,
-  );
-
-  const employees = useMemo(
-    () =>
-      departmentEmployees.filter(
-        (employee) => String(employee.departmentId) === departmentId,
-      ),
-    [departmentId],
-  );
+    (item) => String(item.id) === String(departmentId)
+  )
 
   const totalEmployees = employees.length;
-
   const activeEmployees = employees.filter(
-    (employee) => employee.status === "Active",
+    (emp)=>emp.status === "Active"
+  ).length;
+  const fingerprintRegistered = employees.filter(
+    (emp)=>emp.fingerprint === "Registered"
   ).length;
 
-  const fingerprintRegistered = employees.filter(
-    (employee) => employee.fingerprint === "Registered",
-  ).length;
+  if(isDeptLoading || isEmpLoading){
+    return <LoadingSpinner message="Loading Department Details..." fullPage/>
+  }
+
+  if (isError || !department) {
+    return (
+      <div className="department-employees-empty">
+        <h2>{isError ? "Error loading employees" : "Department not found"}</h2>
+
+        <button type="button" onClick={() => navigate("/departments")}>
+          Back to Departments
+        </button>
+      </div>
+    );
+  }
 
   const columns = [
     {
@@ -89,18 +96,6 @@ const DepartmentEmployees = () => {
       ),
     },
   ];
-
-  if (!department) {
-    return (
-      <div className="department-employees-empty">
-        <h2>Department not found</h2>
-
-        <button type="button" onClick={() => navigate("/departments")}>
-          Back to Departments
-        </button>
-      </div>
-    );
-  }
 
   return (
     <div className="department-employees">

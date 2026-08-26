@@ -9,10 +9,12 @@ import AttendancePunch from "../features/biometric/AttendancePunch";
 import AttendanceHistory from "../features/biometric/AttendanceHistory";
 import Dashboard from "../features/dashboard/pages/Dashboard";
 import Reports from "../features/reports/pages/Reports";
+import Login from "../features/auth/pages/Login";
 
 const App = () => {
   return (
     <Routes>
+      <Route path="/login" element={<Login/>}/>
       <Route element={<AppLayout />}>
         <Route path="/dashboard" element={<Dashboard />} />
 
@@ -34,7 +36,7 @@ const App = () => {
         <Route path="/reports" element={<Reports/>} />
       </Route>
 
-      <Route path="/" element={<Navigate to="/dashboard" replace />} />
+      <Route path="/" element={<Navigate to="/login" replace />} />
     </Routes>
   );
 };

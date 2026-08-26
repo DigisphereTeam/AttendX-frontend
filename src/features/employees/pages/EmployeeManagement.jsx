@@ -1,6 +1,7 @@
 import { useMemo, useState, useCallback } from "react";
 import { FiEdit2, FiEye, FiPlus, FiTrash2 } from "react-icons/fi";
 import { useNavigate } from "react-router-dom";
+import { FaUsers, FaUserCheck, FaUserTimes, FaFingerprint } from "react-icons/fa";
 
 import Avatar from "../../../components/Avatar/Avatar";
 import Badge from "../../../components/Badge/Badge";
@@ -9,14 +10,12 @@ import StatCard from "../../../components/StatCard/StatCard";
 import TablePagination from "../../../components/TablePagination/TablePagination";
 import TableToolbar from "../../../components/TableToolbar/TableToolbar";
 
-import { employees as initialEmployees } from "../data/employeeData";
 import EmployeeModal from "./EmployeeModal";
-
-import { FaUsers, FaUserCheck, FaUserTimes, FaFingerprint } from "react-icons/fa";
+import { useEmployees } from "../api/employeeApi";
 
 import "./EmployeeManagement.css";
 
-const PAGE_SIZE = 10;
+const PAGE_SIZE = 5;
 
 const INITIAL_FORM_STATE = {
   employeeId: "",
@@ -37,7 +36,9 @@ const INITIAL_FILTERS = {
 const EmployeeManagement = () => {
   const navigate = useNavigate();
 
-  const [employees, setEmployees] = useState(initialEmployees);
+  const { data: employees = [], isLoading, isError, error } = useEmployees();
+
+  // Component States
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingEmployee, setEditingEmployee] = useState(null);
   const [employeeForm, setEmployeeForm] = useState(INITIAL_FORM_STATE);
@@ -46,7 +47,9 @@ const EmployeeManagement = () => {
 
   // Department Select Options
   const departmentOptions = useMemo(() => {
-    const departments = [...new Set(employees.map((e) => e.department).filter(Boolean))];
+    const departments = [
+      ...new Set(employees.map((e) => e.departmentName).filter((d) => d && d !== "Unassigned")),
+    ];
     return departments.map((dept) => ({ label: dept, value: dept }));
   }, [employees]);
 
@@ -54,8 +57,8 @@ const EmployeeManagement = () => {
   const statistics = useMemo(() => {
     return {
       total: employees.length,
-      active: employees.filter((e) => e.status === "Active").length,
-      inactive: employees.filter((e) => e.status === "Inactive").length,
+      active: employees.filter((e) => e.status.toLowerCase() === "active").length,
+      inactive: employees.filter((e) => e.status.toLowerCase() !== "active").length,
       fingerprintRegistered: employees.filter((e) => e.fingerprintRegistered).length,
     };
   }, [employees]);
@@ -70,8 +73,12 @@ const EmployeeManagement = () => {
         employee.name.toLowerCase().includes(query) ||
         employee.employeeId.toLowerCase().includes(query);
 
-      const matchesDept = !filters.department || employee.department === filters.department;
-      const matchesStatus = !filters.status || employee.status === filters.status;
+      const matchesDept =
+        !filters.department || employee.departmentName === filters.department;
+
+      const matchesStatus =
+        !filters.status || employee.status.toLowerCase() === filters.status.toLowerCase();
+
       const matchesFingerprint =
         !filters.fingerprint ||
         (filters.fingerprint === "registered"
@@ -104,7 +111,7 @@ const EmployeeManagement = () => {
     setEmployeeForm({
       employeeId: employee.employeeId,
       name: employee.name,
-      department: employee.department,
+      department: employee.departmentName,
       designation: employee.designation,
       phone: employee.phone,
       status: employee.status,
@@ -118,25 +125,21 @@ const EmployeeManagement = () => {
   };
 
   const handleSaveEmployee = (formData) => {
-    setEmployees((prev) =>
-      editingEmployee
-        ? prev.map((emp) => (emp.id === editingEmployee.id ? { ...emp, ...formData } : emp))
-        : [...prev, { id: Date.now(), ...formData, fingerprintRegistered: false }]
-    );
+    console.log("Saving employee payload:", formData);
     handleCloseEmployeeModal();
   };
 
   const handleViewEmployee = useCallback(
     (employee) => {
       navigate(`/employees/${employee.id}`, {
-        state: { selectedEmployee: employee }
+        state: { selectedEmployee: employee.raw },
       });
     },
     [navigate]
   );
 
   const handleDeleteEmployee = useCallback((id) => {
-    setEmployees((prev) => prev.filter((emp) => emp.id !== id));
+    console.log("Deleting employee ID:", id);
   }, []);
 
   const handleFilterChange = (name, value) => {
@@ -149,7 +152,7 @@ const EmployeeManagement = () => {
     setPage(1);
   };
 
-  // Table Columns Definition using Badge component for all badges
+  // Table Columns Definition
   const columns = useMemo(
     () => [
       {
@@ -162,28 +165,34 @@ const EmployeeManagement = () => {
           </div>
         ),
       },
-      { 
-        key: "employeeId", 
+      {
+        key: "employeeId",
         header: "Emp ID",
       },
       {
         key: "department",
         header: "Department",
-        render: (employee) => <Badge variant="info">{employee.department}</Badge>,
+        render: (employee) => (
+          <Badge variant="info">{employee.departmentName}</Badge>
+        ),
       },
-      { 
-        key: "designation", 
+      {
+        key: "designation",
         header: "Designation",
       },
-      { 
-        key: "phone", 
+      {
+        key: "phone",
         header: "Phone",
       },
       {
         key: "status",
         header: "Status",
         render: (employee) => (
-          <Badge variant={employee.status === "Active" ? "success" : "danger"}>
+          <Badge
+            variant={
+              employee.status.toLowerCase() === "active" ? "success" : "danger"
+            }
+          >
             {employee.status}
           </Badge>
         ),
@@ -192,8 +201,9 @@ const EmployeeManagement = () => {
         key: "fingerprint",
         header: "Fingerprint",
         render: (employee) => (
-          /* Uses variant="default" when false so it relies on existing .badge-default styling */
-          <Badge variant={employee.fingerprintRegistered ? "info" : "default"}>
+          <Badge
+            variant={employee.fingerprintRegistered ? "info" : "default"}
+          >
             {employee.fingerprintRegistered ? "Registered" : "Not Registered"}
           </Badge>
         ),
@@ -263,6 +273,14 @@ const EmployeeManagement = () => {
     [departmentOptions]
   );
 
+  if (isError) {
+    return (
+      <div className="employee-management">
+        <div className="error-card">Failed to fetch data: {error?.message}</div>
+      </div>
+    );
+  }
+
   return (
     <div className="employee-management">
       {/* Page Header */}
@@ -271,7 +289,11 @@ const EmployeeManagement = () => {
           <h1>Employee Management</h1>
           <p>Manage your organization's employee records.</p>
         </div>
-        <button type="button" className="department-add-button" onClick={handleOpenAddEmployee}>
+        <button
+          type="button"
+          className="department-add-button"
+          onClick={handleOpenAddEmployee}
+        >
           <FiPlus /> Add Employee
         </button>
       </div>
@@ -279,20 +301,20 @@ const EmployeeManagement = () => {
       {/* Statistics */}
       <div className="row g-3 employee-statistics">
         <div className="col-12 col-sm-6 col-xl-3">
-          <StatCard title="Total Employees" value={statistics.total} icon={FaUsers}/>
+          <StatCard title="Total Employees" value={statistics.total} icon={FaUsers} />
         </div>
         <div className="col-12 col-sm-6 col-xl-3">
-          <StatCard title="Active Employees" value={statistics.active} icon={FaUserCheck}/>
+          <StatCard title="Active Employees" value={statistics.active} icon={FaUserCheck} />
         </div>
         <div className="col-12 col-sm-6 col-xl-3">
           <StatCard title="Inactive Employees" value={statistics.inactive} icon={FaUserTimes} />
         </div>
         <div className="col-12 col-sm-6 col-xl-3">
-          <StatCard title="Fingerprint Registered" value={statistics.fingerprintRegistered} icon={FaFingerprint} />
+          <StatCard title="FP Registered" value={statistics.fingerprintRegistered} icon={FaFingerprint} />
         </div>
       </div>
 
-      {/* Employee Table */}
+      {/* Employee Content Card */}
       <div className="employee-content-card">
         <TableToolbar
           filters={toolbarFilters}
@@ -305,6 +327,7 @@ const EmployeeManagement = () => {
           columns={columns}
           data={paginatedEmployees}
           rowKey="id"
+          loading={isLoading}
           emptyMessage="No employees found."
         />
 

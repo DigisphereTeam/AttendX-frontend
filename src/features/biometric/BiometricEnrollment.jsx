@@ -1,27 +1,39 @@
 import { useState, useMemo, useCallback } from "react";
 import { mockEmployees } from "./mockBiometricData";
+import Avatar from "../../components/Avatar/Avatar";
+import Badge from "../../components/Badge/Badge";
+import "./BiometricEnrollment.css";
 
 export default function BiometricEnrollment({
   employees = mockEmployees,
   onUpdateEmployee = () => {},
 }) {
+  // Own a local copy so the badge/status flips instantly on scan
+  // success, regardless of whether the parent re-supplies `employees`.
+  const [employeeList, setEmployeeList] = useState(employees);
   const [selectedEmpId, setSelectedEmpId] = useState(null);
   const [search, setSearch] = useState("");
   const [isScanning, setIsScanning] = useState(false);
   const [activeStep, setActiveStep] = useState(0);
 
   const selectedEmp = useMemo(
-    () => employees.find((e) => e.id === selectedEmpId),
-    [employees, selectedEmpId],
+    () => employeeList.find((e) => e.id === selectedEmpId),
+    [employeeList, selectedEmpId],
   );
 
   const filteredEmployees = useMemo(() => {
-    return employees.filter(
+    return employeeList.filter(
       (e) =>
         e.name.toLowerCase().includes(search.toLowerCase()) ||
         e.empId.toLowerCase().includes(search.toLowerCase()),
     );
-  }, [employees, search]);
+  }, [employeeList, search]);
+
+  const handleSelectEmployee = useCallback((id) => {
+    setSelectedEmpId(id);
+    setActiveStep(0);
+    setIsScanning(false);
+  }, []);
 
   const handleStartScan = useCallback(() => {
     if (!selectedEmpId) return;
@@ -35,6 +47,13 @@ export default function BiometricEnrollment({
           setActiveStep(step);
           if (step === 4) {
             setIsScanning(false);
+            setEmployeeList((prev) =>
+              prev.map((emp) =>
+                emp.id === selectedEmpId
+                  ? { ...emp, fingerprint: true }
+                  : emp,
+              ),
+            );
             onUpdateEmployee(selectedEmpId, { fingerprint: true });
           }
         },
@@ -44,18 +63,21 @@ export default function BiometricEnrollment({
   }, [selectedEmpId, onUpdateEmployee]);
 
   return (
-    <div className="row g-3">
-      {/* Left Column: Employee Selection List */}
+    <div className="row g-3 biometric-enrollment">
+      {/* Header */}
       <div className="department-content-header">
         <div>
           <h1>Biometric Enrollment</h1>
           <p>
-            Register and manage unique physical fingerprints for secure system access.
+            Register and manage unique physical fingerprints for secure
+            system access.
           </p>
         </div>
       </div>
+
+      {/* Left Column: Employee Selection List */}
       <div className="col-lg-5">
-        <div className="card p-3 h-100">
+        <div className="card p-3 h-100 be-card">
           <h6 className="fw-bold mb-1" style={{ color: "#0A2647" }}>
             Select Employee
           </h6>
@@ -64,7 +86,7 @@ export default function BiometricEnrollment({
           </p>
           <input
             type="text"
-            className="form-control mb-3"
+            className="form-control mb-3 be-input"
             placeholder="Search employee..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
@@ -76,32 +98,23 @@ export default function BiometricEnrollment({
             {filteredEmployees.map((emp) => (
               <div
                 key={emp.id}
-                onClick={() => {
-                  setSelectedEmpId(emp.id);
-                  setActiveStep(0);
-                }}
-                className={`p-2 rounded border cursor-pointer d-flex align-items-center justify-content-between ${
-                  selectedEmpId === emp.id
-                    ? "border-primary bg-light"
-                    : "bg-white"
+                onClick={() => handleSelectEmployee(emp.id)}
+                className={`be-emp-item ${
+                  selectedEmpId === emp.id ? "be-emp-item--active" : ""
                 }`}
-                style={{ cursor: "pointer" }}
               >
-                <div>
-                  <div className="fw-semibold small">{emp.name}</div>
-                  <div className="text-muted tiny" style={{ fontSize: "11px" }}>
-                    {emp.empId} • {emp.dept}
+                <div className="d-flex align-items-center gap-2">
+                  <Avatar name={emp.name} size="small" />
+                  <div>
+                    <div className="fw-semibold small">{emp.name}</div>
+                    <div className="text-muted" style={{ fontSize: "11px" }}>
+                      {emp.empId} • {emp.dept}
+                    </div>
                   </div>
                 </div>
-                {emp.fingerprint ? (
-                  <span className="badge bg-info-subtle text-info rounded-pill">
-                    <i className="bi bi-check-circle-fill me-1"></i> Registered
-                  </span>
-                ) : (
-                  <span className="badge bg-danger-subtle text-danger rounded-pill">
-                    Not Registered
-                  </span>
-                )}
+                <Badge variant={emp.fingerprint ? "info" : "danger"}>
+                  {emp.fingerprint ? "Registered" : "Not Registered"}
+                </Badge>
               </div>
             ))}
           </div>
@@ -110,7 +123,7 @@ export default function BiometricEnrollment({
 
       {/* Right Column: Enrollment Device Area */}
       <div className="col-lg-7">
-        <div className="card p-3 h-100">
+        <div className="card p-3 h-100 be-card">
           <h6 className="fw-bold mb-1" style={{ color: "#0A2647" }}>
             Fingerprint Enrollment Device
           </h6>
@@ -128,48 +141,40 @@ export default function BiometricEnrollment({
           ) : (
             <div>
               {/* Target Banner */}
-              <div
-                className="d-flex align-items-center justify-content-between p-3 rounded mb-4"
-                style={{ background: "#F7F9FC" }}
-              >
-                <div>
-                  <div className="fw-bold" style={{ color: "#0A2647" }}>
-                    {selectedEmp.name}
-                  </div>
-                  <div className="small text-muted">
-                    {selectedEmp.empId} • {selectedEmp.dept} •{" "}
-                    {selectedEmp.designation}
+              <div className="be-target-banner">
+                <div className="d-flex align-items-center gap-3">
+                  <Avatar name={selectedEmp.name} size="medium" />
+                  <div>
+                    <div className="fw-bold" style={{ color: "#0A2647" }}>
+                      {selectedEmp.name}
+                    </div>
+                    <div className="small text-muted">
+                      {selectedEmp.empId} • {selectedEmp.dept} •{" "}
+                      {selectedEmp.designation}
+                    </div>
                   </div>
                 </div>
-                <span
-                  className={`badge rounded-pill ${selectedEmp.fingerprint ? "bg-info-subtle text-info" : "bg-danger-subtle text-danger"}`}
-                >
+                <Badge variant={selectedEmp.fingerprint ? "info" : "danger"}>
                   {selectedEmp.fingerprint
                     ? "Fingerprint Registered"
                     : "Not Registered"}
-                </span>
+                </Badge>
               </div>
 
               <div className="row g-3 align-items-center">
                 {/* Visual Ring Animation */}
                 <div className="col-md-6 text-center">
                   <div
-                    className={`mx-auto rounded-circle d-flex align-items-center justify-content-center position-relative ${
-                      isScanning
-                        ? "border border-primary border-3"
-                        : activeStep === 4
-                          ? "border border-success border-3"
-                          : "border border-dashed"
+                    className={`scanner-ring ${isScanning ? "scanning" : ""} ${
+                      activeStep === 4 ? "success" : ""
                     }`}
-                    style={{
-                      width: "160px",
-                      height: "160px",
-                      background: "#F0FBFD",
-                    }}
                   >
                     <i
-                      className={`bi bi-fingerprint display-3 ${isScanning ? "text-info" : activeStep === 4 ? "text-success" : "text-secondary"}`}
+                      className={`bi bi-fingerprint fp-icon ${
+                        isScanning ? "scanning" : ""
+                      } ${activeStep === 4 ? "success" : ""}`}
                     ></i>
+                    <div className={`scan-line ${isScanning ? "active" : ""}`}></div>
                   </div>
                   <div className="fw-bold mt-3" style={{ color: "#0A2647" }}>
                     {isScanning
@@ -187,22 +192,13 @@ export default function BiometricEnrollment({
 
                 {/* Device Console */}
                 <div className="col-md-6">
-                  <div
-                    className="p-3 rounded text-white d-flex flex-column"
-                    style={{
-                      background: "linear-gradient(180deg,#0F3460,#0A2647)",
-                      minHeight: "260px",
-                    }}
-                  >
+                  <div className="be-device-panel">
                     <div className="d-flex justify-content-between align-items-center mb-2">
                       <span className="fw-bold small">
                         <i className="bi bi-cpu-fill me-1"></i> Device:
                         FP-SCAN-2200
                       </span>
-                      <span
-                        className="rounded-circle bg-success d-inline-block"
-                        style={{ width: "8px", height: "8px" }}
-                      ></span>
+                      <span className="led led-green"></span>
                     </div>
                     <div className="tiny text-white-50">
                       Device ID:{" "}
@@ -224,39 +220,23 @@ export default function BiometricEnrollment({
                         className="ps-3 tiny mb-0 text-white-50"
                         style={{ fontSize: "11px" }}
                       >
-                        <li
-                          style={{
-                            color: activeStep >= 1 ? "#fff" : "inherit",
-                          }}
-                        >
+                        <li style={{ color: activeStep >= 1 ? "#fff" : "inherit" }}>
                           Place finger on scanner
                         </li>
-                        <li
-                          style={{
-                            color: activeStep >= 2 ? "#fff" : "inherit",
-                          }}
-                        >
+                        <li style={{ color: activeStep >= 2 ? "#fff" : "inherit" }}>
                           Capture fingerprint sample (3x)
                         </li>
-                        <li
-                          style={{
-                            color: activeStep >= 3 ? "#fff" : "inherit",
-                          }}
-                        >
+                        <li style={{ color: activeStep >= 3 ? "#fff" : "inherit" }}>
                           Generate biometric template
                         </li>
-                        <li
-                          style={{
-                            color: activeStep >= 4 ? "#fff" : "inherit",
-                          }}
-                        >
+                        <li style={{ color: activeStep >= 4 ? "#fff" : "inherit" }}>
                           Save to employee record
                         </li>
                       </ol>
                     </div>
 
                     <button
-                      className="btn btn-info text-white btn-sm mt-auto w-100 fw-semibold"
+                      className="btn btn-info scan-btn text-white btn-sm mt-auto w-100 fw-semibold be-btn"
                       disabled={isScanning}
                       onClick={handleStartScan}
                     >

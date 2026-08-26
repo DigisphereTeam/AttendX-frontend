@@ -1,10 +1,7 @@
 import axios from "axios";
 import toast from "react-hot-toast";
 
-import {
-  getToken,
-  clearAuth,
-} from "../features/auth/utils/authStorage";
+import { getToken, clearAuth } from "../features/auth/utils/authStorage";
 
 const axiosInstance = axios.create({
   baseURL: import.meta.env.VITE_API_BASE_URL,

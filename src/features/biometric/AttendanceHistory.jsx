@@ -48,6 +48,7 @@ export default function AttendanceHistory({
       {
         name: "empId",
         type: "select",
+        wide: true,
         placeholder: "All Employees",
         options: employees.map((e) => ({
           label: `${e.name} (${e.empId})`,

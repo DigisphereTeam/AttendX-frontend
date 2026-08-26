@@ -1,0 +1,134 @@
+
+.biometric-enrollment {
+  --radius-md: 12px;
+}
+
+.be-card {
+  border-radius: var(--radius-md);
+}
+
+.be-input {
+  border-radius: var(--radius-md);
+}
+
+.be-emp-item {
+  border: 1px solid var(--border, #E7ECF3);
+  border-radius: var(--radius-md);
+  padding: 10px 12px;
+  cursor: pointer;
+  transition: 0.15s;
+  background: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.be-emp-item:hover {
+  background: #FAFBFE;
+}
+.be-emp-item--active {
+  border-color: var(--accent, #00B4D8);
+  background: var(--accent-soft, #E6F9FC);
+}
+
+.be-target-banner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 16px;
+  border-radius: var(--radius-md);
+  background: #F7F9FC;
+  margin-bottom: 24px;
+}
+
+.be-device-panel {
+  background: #034b7b;
+  border-radius: var(--radius-md);
+  padding: 18px;
+  color: #fff;
+  min-height: 260px;
+  display: flex;
+  flex-direction: column;
+}
+.be-device-panel .led {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  display: inline-block;
+}
+.be-device-panel .led-green {
+  background: #12B76A;
+  box-shadow: 0 0 8px #12B76A;
+}
+
+.be-btn {
+  border-radius: var(--radius-md);
+}
+
+.scan-btn{
+    background-color: #0464A4 !important;
+}
+.scan-btn:hover{
+    background-color: #057DCD !important;
+}
+
+/* ---------- Scanner ring + fingerprint icon ---------- */
+.scanner-ring {
+  width: 160px;
+  height: 160px;
+  border-radius: 50%;
+  border: 3px dashed #C9E9F2;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  background: radial-gradient(circle at center, #F0FBFD 0%, #ffffff 70%);
+  margin: 0 auto;
+}
+.scanner-ring.scanning {
+  border-color: var(--accent, #00B4D8);
+  border-style: solid;
+  animation: pulseRing 1s infinite;
+}
+.scanner-ring.success {
+  border-color: var(--success, #12B76A);
+  border-style: solid;
+}
+
+.fp-icon {
+  font-size: 72px;
+  color: #B9CBE0;
+  transition: 0.3s;
+}
+.fp-icon.scanning {
+  color: var(--accent, #00B4D8);
+}
+.fp-icon.success {
+  color: var(--success, #12B76A);
+}
+
+.scan-line {
+  position: absolute;
+  left: 14%;
+  width: 72%;
+  height: 3px;
+  background: linear-gradient(90deg, transparent, var(--accent, #00B4D8), transparent);
+  top: 20%;
+  opacity: 0;
+  border-radius: 3px;
+}
+.scan-line.active {
+  animation: scanMove 1.1s ease-in-out infinite;
+  opacity: 1;
+}
+
+@keyframes pulseRing {
+  0% { box-shadow: 0 0 0 0 rgba(0, 180, 216, 0.35); }
+  70% { box-shadow: 0 0 0 18px rgba(0, 180, 216, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(0, 180, 216, 0); }
+}
+
+@keyframes scanMove {
+  0% { top: 18%; }
+  50% { top: 82%; }
+  100% { top: 18%; }
+}

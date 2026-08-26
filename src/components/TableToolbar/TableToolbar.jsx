@@ -23,15 +23,15 @@ const MonthPickerField = ({ filter, values, onChange }) => {
 
   // Fallback to control value, default filter value, or dynamic current year-month
   const rawValue = values[filter.name] || filter.defaultValue || getCurrentYYYYMM();
-  
+
   // Safely parse Year and Month
   const [yearStr, monthStr] = rawValue.split("-");
   const parsedYear = parseInt(yearStr, 10);
   const parsedMonth = parseInt(monthStr, 10);
 
   const currentYear = !isNaN(parsedYear) ? parsedYear : new Date().getFullYear();
-  const currentMonthIdx = !isNaN(parsedMonth) && parsedMonth >= 1 && parsedMonth <= 12 
-    ? parsedMonth - 1 
+  const currentMonthIdx = !isNaN(parsedMonth) && parsedMonth >= 1 && parsedMonth <= 12
+    ? parsedMonth - 1
     : 0;
 
   const yearsList = filter.years || DEFAULT_YEARS;
@@ -156,7 +156,10 @@ const TableToolbar = ({
 
           if (filter.type === "select") {
             return (
-              <div className="toolbar-select-wrapper" key={filter.name}>
+              <div
+                className={`toolbar-select-wrapper ${filter.wide ? "toolbar-select-wrapper--wide" : ""}`}
+                key={filter.name}
+              >
                 <select
                   className="toolbar-select"
                   value={values[filter.name] || ""}
