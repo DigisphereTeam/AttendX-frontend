@@ -9,14 +9,12 @@ const EmployeeModal = ({
   setFormData,
   departmentOptions = [],
   isEditing = false,
+  isSubmitting = false,
 }) => {
-  if (!isOpen) {
-    return null;
-  }
+  if (!isOpen) return null;
 
   const handleChange = (event) => {
     const { name, value } = event.target;
-
     setFormData((prev) => ({
       ...prev,
       [name]: value,
@@ -30,15 +28,15 @@ const EmployeeModal = ({
 
   return (
     <div className="modal-overlay" onClick={onClose}>
-      <div className="modal-container" onClick={(event) => event.stopPropagation()}>
+      <div className="modal-container" onClick={(e) => e.stopPropagation()}>
         {/* Header */}
         <div className="modal-header">
           <h2>{isEditing ? "Edit Employee" : "Add Employee"}</h2>
-
           <button
             type="button"
             className="modal-close"
             onClick={onClose}
+            disabled={isSubmitting}
             aria-label="Close modal"
           >
             <FiX />
@@ -48,20 +46,6 @@ const EmployeeModal = ({
         {/* Form Body */}
         <form className="modal-body" onSubmit={handleSubmit}>
           <div className="modal-content-scroll">
-            {/* Employee ID */}
-            {/* <div className="form-group">
-              <label htmlFor="employeeId">Employee ID</label>
-              <input
-                id="employeeId"
-                name="employeeId"
-                type="text"
-                placeholder="e.g. EMP-1013"
-                value={formData?.employeeId || ""}
-                onChange={handleChange}
-                required
-              />
-            </div> */}
-
             {/* Full Name */}
             <div className="form-group">
               <label htmlFor="name">Full Name</label>
@@ -72,6 +56,7 @@ const EmployeeModal = ({
                 placeholder="e.g. Rahul Sharma"
                 value={formData?.name || ""}
                 onChange={handleChange}
+                disabled={isSubmitting}
                 required
               />
             </div>
@@ -85,13 +70,17 @@ const EmployeeModal = ({
                   name="department"
                   value={formData?.department || ""}
                   onChange={handleChange}
+                  disabled={isSubmitting}
                   required
                 >
                   <option value="" disabled>
                     Select Department
                   </option>
                   {departmentOptions.map((dept) => (
-                    <option key={dept.value || dept.id} value={dept.value || dept.name}>
+                    <option
+                      key={dept.value || dept.id}
+                      value={dept.value || dept.id}
+                    >
                       {dept.label || dept.name}
                     </option>
                   ))}
@@ -110,6 +99,7 @@ const EmployeeModal = ({
                 placeholder="e.g. Software Engineer"
                 value={formData?.designation || ""}
                 onChange={handleChange}
+                disabled={isSubmitting}
                 required
               />
             </div>
@@ -125,6 +115,7 @@ const EmployeeModal = ({
                 maxLength={10}
                 value={formData?.phone || ""}
                 onChange={handleChange}
+                disabled={isSubmitting}
                 required
               />
             </div>
@@ -138,6 +129,7 @@ const EmployeeModal = ({
                   name="status"
                   value={formData?.status || "Active"}
                   onChange={handleChange}
+                  disabled={isSubmitting}
                   required
                 >
                   <option value="Active">Active</option>
@@ -154,12 +146,21 @@ const EmployeeModal = ({
               type="button"
               className="btn-secondary"
               onClick={onClose}
+              disabled={isSubmitting}
             >
               Cancel
             </button>
 
-            <button type="submit" className="btn-primary">
-              {isEditing ? "Save Changes" : "Save Employee"}
+            <button
+              type="submit"
+              className="btn-primary"
+              disabled={isSubmitting}
+            >
+              {isSubmitting
+                ? "Saving..."
+                : isEditing
+                  ? "Save Changes"
+                  : "Save Employee"}
             </button>
           </div>
         </form>

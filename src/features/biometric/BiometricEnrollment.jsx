@@ -1,33 +1,41 @@
 import { useState, useMemo, useCallback } from "react";
-import { mockEmployees } from "./mockBiometricData";
 import Avatar from "../../components/Avatar/Avatar";
 import Badge from "../../components/Badge/Badge";
 import "./BiometricEnrollment.css";
+import { useEmployees } from "../employees/api/employeeApi";
+import LoadingSpinner from "../../components/LoadingSpinner/LoadingSpinner";
 
-export default function BiometricEnrollment({
-  employees = mockEmployees,
-  onUpdateEmployee = () => {},
-}) {
-  // Own a local copy so the badge/status flips instantly on scan
-  // success, regardless of whether the parent re-supplies `employees`.
-  const [employeeList, setEmployeeList] = useState(employees);
+export default function BiometricEnrollment({ onUpdateEmployee = () => {} }) {
+  const { data: employees=[], isLoading, isError } = useEmployees();
+
+  const [localOverrides, setLocalOverrides] = useState({});
   const [selectedEmpId, setSelectedEmpId] = useState(null);
   const [search, setSearch] = useState("");
   const [isScanning, setIsScanning] = useState(false);
   const [activeStep, setActiveStep] = useState(0);
 
+const mergedEmployees = useMemo(() => {
+
+  const list = employees?.employees || [];
+
+  return list.map((emp) => ({
+    ...emp,
+    fingerprint: localOverrides[emp.id] ?? emp.fingerprint,
+  }));
+}, [employees, localOverrides]);
+
   const selectedEmp = useMemo(
-    () => employeeList.find((e) => e.id === selectedEmpId),
-    [employeeList, selectedEmpId],
+    () => mergedEmployees.find((e) => e.id === selectedEmpId),
+    [mergedEmployees, selectedEmpId],
   );
 
   const filteredEmployees = useMemo(() => {
-    return employeeList.filter(
+    return mergedEmployees.filter(
       (e) =>
         e.name.toLowerCase().includes(search.toLowerCase()) ||
         e.empId.toLowerCase().includes(search.toLowerCase()),
     );
-  }, [employeeList, search]);
+  }, [mergedEmployees, search]);
 
   const handleSelectEmployee = useCallback((id) => {
     setSelectedEmpId(id);
@@ -37,30 +45,44 @@ export default function BiometricEnrollment({
 
   const handleStartScan = useCallback(() => {
     if (!selectedEmpId) return;
+
     setIsScanning(true);
     setActiveStep(1);
 
     const steps = [1, 2, 3, 4];
+
     steps.forEach((step, idx) => {
       setTimeout(
         () => {
           setActiveStep(step);
+
           if (step === 4) {
             setIsScanning(false);
-            setEmployeeList((prev) =>
-              prev.map((emp) =>
-                emp.id === selectedEmpId
-                  ? { ...emp, fingerprint: true }
-                  : emp,
-              ),
-            );
-            onUpdateEmployee(selectedEmpId, { fingerprint: true });
+
+            setLocalOverrides((prev) => ({
+              ...prev,
+              [selectedEmpId]: true,
+            }));
+
+            onUpdateEmployee(selectedEmpId, {
+              fingerprint: true,
+            });
           }
         },
         (idx + 1) * 750,
       );
     });
   }, [selectedEmpId, onUpdateEmployee]);
+
+  if (isLoading) {
+    return <LoadingSpinner message="Loading Employees" fullPage />;
+  }
+  if (isError)
+    return (
+      <div className="p-4 text-center text-danger">
+        Failed to fetch employees.
+      </div>
+    );
 
   return (
     <div className="row g-3 biometric-enrollment">
@@ -69,8 +91,8 @@ export default function BiometricEnrollment({
         <div>
           <h1>Biometric Enrollment</h1>
           <p>
-            Register and manage unique physical fingerprints for secure
-            system access.
+            Register and manage unique physical fingerprints for secure system
+            access.
           </p>
         </div>
       </div>
@@ -108,7 +130,7 @@ export default function BiometricEnrollment({
                   <div>
                     <div className="fw-semibold small">{emp.name}</div>
                     <div className="text-muted" style={{ fontSize: "11px" }}>
-                      {emp.empId} • {emp.dept}
+                      {emp.employeeId} • {emp.departmentName}
                     </div>
                   </div>
                 </div>
@@ -149,7 +171,7 @@ export default function BiometricEnrollment({
                       {selectedEmp.name}
                     </div>
                     <div className="small text-muted">
-                      {selectedEmp.empId} • {selectedEmp.dept} •{" "}
+                      {selectedEmp.employeeId} • {selectedEmp.departmentName} •{" "}
                       {selectedEmp.designation}
                     </div>
                   </div>
@@ -174,7 +196,9 @@ export default function BiometricEnrollment({
                         isScanning ? "scanning" : ""
                       } ${activeStep === 4 ? "success" : ""}`}
                     ></i>
-                    <div className={`scan-line ${isScanning ? "active" : ""}`}></div>
+                    <div
+                      className={`scan-line ${isScanning ? "active" : ""}`}
+                    ></div>
                   </div>
                   <div className="fw-bold mt-3" style={{ color: "#0A2647" }}>
                     {isScanning
@@ -220,16 +244,32 @@ export default function BiometricEnrollment({
                         className="ps-3 tiny mb-0 text-white-50"
                         style={{ fontSize: "11px" }}
                       >
-                        <li style={{ color: activeStep >= 1 ? "#fff" : "inherit" }}>
+                        <li
+                          style={{
+                            color: activeStep >= 1 ? "#fff" : "inherit",
+                          }}
+                        >
                           Place finger on scanner
                         </li>
-                        <li style={{ color: activeStep >= 2 ? "#fff" : "inherit" }}>
+                        <li
+                          style={{
+                            color: activeStep >= 2 ? "#fff" : "inherit",
+                          }}
+                        >
                           Capture fingerprint sample (3x)
                         </li>
-                        <li style={{ color: activeStep >= 3 ? "#fff" : "inherit" }}>
+                        <li
+                          style={{
+                            color: activeStep >= 3 ? "#fff" : "inherit",
+                          }}
+                        >
                           Generate biometric template
                         </li>
-                        <li style={{ color: activeStep >= 4 ? "#fff" : "inherit" }}>
+                        <li
+                          style={{
+                            color: activeStep >= 4 ? "#fff" : "inherit",
+                          }}
+                        >
                           Save to employee record
                         </li>
                       </ol>

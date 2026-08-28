@@ -1,6 +1,6 @@
 import { useMemo, useState, useCallback } from "react";
 import { FiEdit2, FiEye, FiPlus, FiTrash2 } from "react-icons/fi";
-import { useNavigate } from "react-router-dom";
+import { data, useNavigate } from "react-router-dom";
 import { FaUsers, FaUserCheck, FaUserTimes, FaFingerprint } from "react-icons/fa";
 
 import Avatar from "../../../components/Avatar/Avatar";
@@ -11,7 +11,13 @@ import TablePagination from "../../../components/TablePagination/TablePagination
 import TableToolbar from "../../../components/TableToolbar/TableToolbar";
 
 import EmployeeModal from "./EmployeeModal";
-import { useEmployees } from "../api/employeeApi";
+import { 
+  useCreateEmployee, 
+  useUpdateEmployee, 
+  useDeleteEmployee, 
+  useEmployees 
+} from "../api/employeeApi";
+import { useDepartments } from "../../departments/api/departmentApi";
 
 import "./EmployeeManagement.css";
 
@@ -36,48 +42,53 @@ const INITIAL_FILTERS = {
 const EmployeeManagement = () => {
   const navigate = useNavigate();
 
-  const { data: employees = [], isLoading, isError, error } = useEmployees();
+  const { data = { employees: [], counts: {} }, isLoading, isError, error } = useEmployees();
+  const {employees,counts} = data;
+  const { data: departments = [] } = useDepartments();
 
-  // Component States
+  const createEmployeeMutation = useCreateEmployee();
+  const updateEmployeeMutation = useUpdateEmployee();
+  const deleteEmployeeMutation = useDeleteEmployee();
+
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingEmployee, setEditingEmployee] = useState(null);
   const [employeeForm, setEmployeeForm] = useState(INITIAL_FORM_STATE);
   const [filters, setFilters] = useState(INITIAL_FILTERS);
   const [page, setPage] = useState(1);
 
-  // Department Select Options
   const departmentOptions = useMemo(() => {
-    const departments = [
-      ...new Set(employees.map((e) => e.departmentName).filter((d) => d && d !== "Unassigned")),
-    ];
-    return departments.map((dept) => ({ label: dept, value: dept }));
-  }, [employees]);
+    return departments.map((dept) => ({
+      label: dept.name,
+      value: dept.id,
+    }));
+  }, [departments]);
 
-  // Statistics Calculation
-  const statistics = useMemo(() => {
-    return {
-      total: employees.length,
-      active: employees.filter((e) => e.status.toLowerCase() === "active").length,
-      inactive: employees.filter((e) => e.status.toLowerCase() !== "active").length,
-      fingerprintRegistered: employees.filter((e) => e.fingerprintRegistered).length,
-    };
-  }, [employees]);
+  // statistics
+  const statistics = useMemo(()=>{
+    return{
+      total: counts.total_employees,
+      active: counts.active_employees,
+      inactive: counts.inactive_employees,
+      fingerprintRegistered: counts.fp_registered,
+    }
+  },[counts])
 
-  // Filtered & Paginated Employees
+  // Filter logic aligned with normalized model
   const filteredEmployees = useMemo(() => {
     const query = filters.search.trim().toLowerCase();
 
     return employees.filter((employee) => {
       const matchesSearch =
         !query ||
-        employee.name.toLowerCase().includes(query) ||
-        employee.employeeId.toLowerCase().includes(query);
+        employee.name?.toLowerCase().includes(query) ||
+        employee.employeeId?.toLowerCase().includes(query);
 
       const matchesDept =
-        !filters.department || employee.departmentName === filters.department;
+        !filters.department ||
+        String(employee.departmentId) === String(filters.department);
 
       const matchesStatus =
-        !filters.status || employee.status.toLowerCase() === filters.status.toLowerCase();
+        !filters.status || employee.status?.toLowerCase() === filters.status.toLowerCase();
 
       const matchesFingerprint =
         !filters.fingerprint ||
@@ -99,10 +110,7 @@ const EmployeeManagement = () => {
   // Handlers
   const handleOpenAddEmployee = () => {
     setEditingEmployee(null);
-    setEmployeeForm({
-      ...INITIAL_FORM_STATE,
-      employeeId: `EMP-${1013 + employees.length}`,
-    });
+    setEmployeeForm(INITIAL_FORM_STATE);
     setIsModalOpen(true);
   };
 
@@ -111,7 +119,7 @@ const EmployeeManagement = () => {
     setEmployeeForm({
       employeeId: employee.employeeId,
       name: employee.name,
-      department: employee.departmentName,
+      department: employee.departmentId || "", // Set value to ID for select match
       designation: employee.designation,
       phone: employee.phone,
       status: employee.status,
@@ -122,11 +130,29 @@ const EmployeeManagement = () => {
   const handleCloseEmployeeModal = () => {
     setIsModalOpen(false);
     setEditingEmployee(null);
+    setEmployeeForm(INITIAL_FORM_STATE);
   };
 
   const handleSaveEmployee = (formData) => {
-    console.log("Saving employee payload:", formData);
-    handleCloseEmployeeModal();
+    const payload = {
+      employee_name: formData.name,
+      department_id: Number(formData.department),
+      designation: formData.designation,
+      mobile_number: formData.phone,
+      status: formData.status,
+      ...(editingEmployee ? {} : { device_ip: "192.168.0.112", device_port: 4370 }),
+    };
+
+    if (editingEmployee) {
+      updateEmployeeMutation.mutate(
+        { id: editingEmployee.id, payload },
+        { onSuccess: handleCloseEmployeeModal }
+      );
+    } else {
+      createEmployeeMutation.mutate(payload, {
+        onSuccess: handleCloseEmployeeModal,
+      });
+    }
   };
 
   const handleViewEmployee = useCallback(
@@ -138,9 +164,14 @@ const EmployeeManagement = () => {
     [navigate]
   );
 
-  const handleDeleteEmployee = useCallback((id) => {
-    console.log("Deleting employee ID:", id);
-  }, []);
+  const handleDeleteEmployee = useCallback(
+    (id) => {
+      if (window.confirm("Are you sure you want to delete this employee?")) {
+        deleteEmployeeMutation.mutate(id);
+      }
+    },
+    [deleteEmployeeMutation]
+  );
 
   const handleFilterChange = (name, value) => {
     setFilters((prev) => ({ ...prev, [name]: value }));
@@ -152,7 +183,6 @@ const EmployeeManagement = () => {
     setPage(1);
   };
 
-  // Table Columns Definition
   const columns = useMemo(
     () => [
       {
@@ -235,6 +265,7 @@ const EmployeeManagement = () => {
               type="button"
               className="employee-action-button employee-delete-button"
               onClick={() => handleDeleteEmployee(employee.id)}
+              disabled={deleteEmployeeMutation.isPending}
               title="Delete employee"
               aria-label="Delete employee"
             >
@@ -244,7 +275,7 @@ const EmployeeManagement = () => {
         ),
       },
     ],
-    [handleViewEmployee, handleOpenEditEmployee, handleDeleteEmployee]
+    [handleViewEmployee, handleOpenEditEmployee, handleDeleteEmployee, deleteEmployeeMutation.isPending]
   );
 
   const toolbarFilters = useMemo(
@@ -283,7 +314,6 @@ const EmployeeManagement = () => {
 
   return (
     <div className="employee-management">
-      {/* Page Header */}
       <div className="department-content-header">
         <div>
           <h1>Employee Management</h1>
@@ -298,7 +328,6 @@ const EmployeeManagement = () => {
         </button>
       </div>
 
-      {/* Statistics */}
       <div className="row g-3 employee-statistics">
         <div className="col-12 col-sm-6 col-xl-3">
           <StatCard title="Total Employees" value={statistics.total} icon={FaUsers} />
@@ -314,7 +343,6 @@ const EmployeeManagement = () => {
         </div>
       </div>
 
-      {/* Employee Content Card */}
       <div className="employee-content-card">
         <TableToolbar
           filters={toolbarFilters}
@@ -341,7 +369,6 @@ const EmployeeManagement = () => {
         />
       </div>
 
-      {/* Employee Modal */}
       <EmployeeModal
         isOpen={isModalOpen}
         onClose={handleCloseEmployeeModal}
@@ -350,6 +377,7 @@ const EmployeeManagement = () => {
         setFormData={setEmployeeForm}
         departmentOptions={departmentOptions}
         isEditing={Boolean(editingEmployee)}
+        isSubmitting={createEmployeeMutation.isPending || updateEmployeeMutation.isPending}
       />
     </div>
   );
