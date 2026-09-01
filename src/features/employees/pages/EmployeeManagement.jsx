@@ -28,6 +28,7 @@ import "./EmployeeManagement.css";
 import ConfirmDialog from "../../../components/ConfirmDialog/ConfirmDialog";
 import toast from "react-hot-toast";
 import LoadingSpinner from "../../../components/LoadingSpinner/LoadingSpinner";
+import { employeeSchema } from "./employeeSchema";
 
 const PAGE_SIZE = 5;
 
@@ -146,16 +147,23 @@ const EmployeeManagement = () => {
   };
 
   const handleSaveEmployee = (formData) => {
-    const payload = {
-      employee_name: formData.name,
-      department_id: Number(formData.department),
-      designation: formData.designation,
-      mobile_number: formData.phone,
-      status: formData.status,
-      // ...(editingEmployee
-      //   ? {}
-      //   : { device_ip: "192.168.0.112", device_port: 4370 }),
-    };
+    const result = employeeSchema.safeParse(formData);
+
+  if (!result.success) {
+    const firstError = result.error.issues[0];
+
+    toast.error(firstError.message);
+
+    return;
+  }
+
+  const payload = {
+    employee_name: formData.name,
+    department_id: Number(formData.department),
+    designation: formData.designation,
+    mobile_number: formData.phone,
+    status: formData.status,
+  };
 
     if (editingEmployee) {
       updateEmployeeMutation.mutate(

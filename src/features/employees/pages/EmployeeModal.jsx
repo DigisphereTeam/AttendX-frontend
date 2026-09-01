@@ -1,5 +1,4 @@
 import { FiX, FiChevronDown } from "react-icons/fi";
-// import "./DepartmentModal.css";
 
 const EmployeeModal = ({
   isOpen,

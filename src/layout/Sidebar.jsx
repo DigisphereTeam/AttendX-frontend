@@ -1,7 +1,6 @@
 import { NavLink } from "react-router-dom";
 import {
   FiBarChart2,
-  FiClock,
   FiGrid,
   FiLayers,
   FiUsers,
