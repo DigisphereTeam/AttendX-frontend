@@ -1,3 +1,5 @@
+import { useEffect, useMemo } from "react";
+ 
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -7,32 +9,122 @@ import {
   Tooltip,
   Legend,
 } from "chart.js";
+ 
 import { Bar, Doughnut } from "react-chartjs-2";
-import { FaUsers, FaUserCheck, FaUserTimes, FaUserClock, FaFingerprint } from "react-icons/fa";
-
+import toast from "react-hot-toast";
+ 
 import {
-  statsData,
-  weeklyTrendData,
-  deptStrengthData,
-  punchFeed,
-  deptList,
-} from "../data/mockData";
-import "./Dashboard.css";
+  FaUsers,
+  FaUserCheck,
+  FaUserTimes,
+  FaUserClock,
+  FaFingerprint,
+} from "react-icons/fa";
+ 
+import { useDashboard } from "../api/dashboardApi";
+ 
 import StatCard from "../../../components/StatCard/StatCard";
 import Avatar from "../../../components/Avatar/Avatar";
-
-ChartJS.register(CategoryScale, LinearScale, BarElement, ArcElement, Tooltip, Legend);
-
-// 4th Fix: Exact icon mapping matching image_8c05be
+ 
+import "./Dashboard.css";
+import LoadingSpinner from "../../../components/LoadingSpinner/LoadingSpinner";
+ 
+ChartJS.register(
+  CategoryScale,
+  LinearScale,
+  BarElement,
+  ArcElement,
+  Tooltip,
+  Legend,
+);
+ 
 const statIcons = [FaUsers, FaUserCheck, FaUserTimes, FaUserClock];
-
+ 
+const departmentColors = [
+  "#0F3460",
+  "#00B4D8",
+  "#12B76A",
+  "#F79009",
+  "#F04438",
+];
+ 
 const Dashboard = () => {
+  const { data: response, isLoading, isError, error } = useDashboard();
+ 
+  useEffect(() => {
+    if (isError) {
+      toast.error(
+        error?.response?.data?.message || "Failed to load dashboard data.",
+      );
+    }
+  }, [isError, error]);
+ 
+  const dashboardData = response?.data;
+ 
+  const summary = dashboardData?.summary || {};
+  const weeklyTrend = dashboardData?.weeklyTrend || [];
+  const departmentStrength = dashboardData?.departmentStrength || [];
+  const punchActivity = dashboardData?.punchActivity || [];
+  const departmentsOverview = dashboardData?.departmentsOverview || [];
+ 
+  const statsData = [
+    { title: "Total Employees", value: summary.totalEmployees || 0 },
+    { title: "Present Today", value: summary.presentToday || 0 },
+    { title: "Absent Today", value: summary.absentToday || 0 },
+    { title: "Late Arrivals", value: summary.lateArrivals || 0 },
+  ];
+ 
+  const weeklyChartData = useMemo(
+    () => ({
+      labels: weeklyTrend.map((item) => item.day),
+      datasets: [
+        {
+          label: "Present",
+          data: weeklyTrend.map((item) => item.present),
+          backgroundColor: "#10B981",
+        },
+        {
+          label: "Absent",
+          data: weeklyTrend.map((item) => item.absent),
+          backgroundColor: "#EF4444",
+        },
+        {
+          label: "Late",
+          data: weeklyTrend.map((item) => item.late),
+          backgroundColor: "#F59E0B",
+        },
+      ],
+    }),
+    [weeklyTrend],
+  );
+ 
+  const departmentChartData = useMemo(
+    () => ({
+      labels: departmentStrength.map((item) => item.department),
+      datasets: [
+        {
+          data: departmentStrength.map((item) => item.count),
+          backgroundColor: departmentColors,
+          borderWidth: 0,
+        },
+      ],
+    }),
+    [departmentStrength],
+  );
+ 
+  if (isLoading) {
+    return (
+      <LoadingSpinner/>
+    );
+  }
+ 
   return (
     <div className="dashboard-view">
       {/* STATS ROW */}
       <div className="stats-grid">
         {statsData.map((item, idx) => {
           const IconComponent = statIcons[idx % statIcons.length];
+ 
           return (
             <StatCard
               key={idx}
@@ -47,33 +139,38 @@ const Dashboard = () => {
           );
         })}
       </div>
-
+ 
       {/* CHARTS ROW */}
       <div className="charts-grid">
         <div className="card-box">
           <h3 className="card-heading">Weekly Attendance Trend</h3>
-          <p className="card-subtext">Present vs Absent vs Late — last 7 days</p>
+          <p className="card-subtext">
+            Present vs Absent vs Late — last 7 days
+          </p>
           <div className="chart-wrapper">
             <Bar
-              data={weeklyTrendData}
+              data={weeklyChartData}
               options={{
                 responsive: true,
                 maintainAspectRatio: false,
                 plugins: { legend: { position: "bottom" } },
-                scales: { x: { grid: { display: false } }, y: { beginAtZero: true } },
+                scales: {
+                  x: { grid: { display: false } },
+                  y: { beginAtZero: true },
+                },
               }}
             />
           </div>
         </div>
-
+ 
         <div className="card-box">
           <h3 className="card-heading">Department-wise Strength</h3>
           <p className="card-subtext">Employee distribution</p>
-          
+ 
           {/* 3rd Fix: Wrapper centered flex layout */}
           <div className="doughnut-wrapper">
             <Doughnut
-              data={deptStrengthData}
+              data={departmentChartData}
               options={{
                 responsive: true,
                 maintainAspectRatio: false,
@@ -82,24 +179,24 @@ const Dashboard = () => {
               }}
             />
           </div>
-          
+ 
           <div className="dept-legend">
-            {deptStrengthData.labels.map((lbl, idx) => (
-              <div className="legend-item" key={idx}>
+            {departmentStrength.map((item, idx) => (
+              <div className="legend-item" key={item.department}>
                 <span>
                   <span
                     className="dot"
-                    style={{ backgroundColor: deptStrengthData.datasets[0].backgroundColor[idx] }}
+                    style={{ backgroundColor: departmentColors[idx] }}
                   ></span>
-                  {lbl}
+                  {item.department}
                 </span>
-                <strong>{deptStrengthData.datasets[0].data[idx]}</strong>
+                <strong>{item.count}</strong>
               </div>
             ))}
           </div>
         </div>
       </div>
-
+ 
       {/* BOTTOM PANELS ROW */}
       <div className="panels-grid">
         <div className="card-box">
@@ -110,38 +207,53 @@ const Dashboard = () => {
             </span>
           </div>
           <div className="punch-feed">
-            {punchFeed.map((item) => (
-              <div key={item.id} className="punch-item">
-                {/* 1st Fix: Avatar alongside aligned info wrapper */}
-                <Avatar name={item.name} src={item.avatarSrc} size="small" />
-                <div className="punch-info">
-                  <strong>{item.name}</strong>
-                  <p>{item.dept} • {item.time}</p>
+            {punchActivity.length > 0 ? (
+              punchActivity.map((item, idx) => (
+                <div key={`${item.employeeId}-${idx}`} className="punch-item">
+                  {/* 1st Fix: Avatar alongside aligned info wrapper */}
+                  <Avatar name={item.employeeName} size="small" />
+ 
+                  <div className="punch-info">
+                    <strong>{item.employeeName}</strong>
+                    <p>
+                      {item.department} • {item.punchInTime}
+                    </p>
+                  </div>
+ 
+                  <span className="badge-late">{item.status}</span>
                 </div>
-                <span className="badge-late">{item.status}</span>
-              </div>
-            ))}
+              ))
+            ) : (
+              <p>No punch activity available.</p>
+            )}
           </div>
         </div>
-
+ 
         <div className="card-box">
           <h3 className="card-heading">Departments Overview</h3>
           <p className="card-subtext">Quick snapshot</p>
           <div className="dept-list">
-            {deptList.map((dept, idx) => (
-              <div key={idx} className="dept-item">
-                <div>
-                  <strong>{dept.name}</strong>
-                  <p>Head: {dept.head}</p>
+            {departmentsOverview.length > 0 ? (
+              departmentsOverview.map((dept) => (
+                <div key={dept.departmentId} className="dept-item">
+                  <div>
+                    <strong>{dept.departmentName}</strong>
+                    {/* <p>Head: {dept.head}</p> */}
+ 
+                    <p> Employee count: {dept.employeeCount} </p>
+                  </div>
+                  <span className="dept-chip">{dept.employeeCount}</span>
                 </div>
-                <span className="dept-chip">{dept.count}</span>
-              </div>
-            ))}
+              ))
+            ) : (
+              <p>No departments available.</p>
+            )}
           </div>
         </div>
       </div>
     </div>
   );
 };
-
+ 
 export default Dashboard;
+ 

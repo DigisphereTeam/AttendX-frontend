@@ -1,7 +1,12 @@
 import { useMemo, useState, useCallback } from "react";
 import { FiEdit2, FiEye, FiPlus, FiTrash2 } from "react-icons/fi";
-import { data, useNavigate } from "react-router-dom";
-import { FaUsers, FaUserCheck, FaUserTimes, FaFingerprint } from "react-icons/fa";
+import { useNavigate } from "react-router-dom"; // Fixed: Removed unused 'data' import
+import {
+  FaUsers,
+  FaUserCheck,
+  FaUserTimes,
+  FaFingerprint,
+} from "react-icons/fa";
 
 import Avatar from "../../../components/Avatar/Avatar";
 import Badge from "../../../components/Badge/Badge";
@@ -11,15 +16,18 @@ import TablePagination from "../../../components/TablePagination/TablePagination
 import TableToolbar from "../../../components/TableToolbar/TableToolbar";
 
 import EmployeeModal from "./EmployeeModal";
-import { 
-  useCreateEmployee, 
-  useUpdateEmployee, 
-  useDeleteEmployee, 
-  useEmployees 
+import {
+  useCreateEmployee,
+  useUpdateEmployee,
+  useDeleteEmployee,
+  useEmployees,
 } from "../api/employeeApi";
 import { useDepartments } from "../../departments/api/departmentApi";
 
 import "./EmployeeManagement.css";
+import ConfirmDialog from "../../../components/ConfirmDialog/ConfirmDialog";
+import toast from "react-hot-toast";
+// import LoadingSpinner from "../../../components/LoadingSpinner/LoadingSpinner";
 
 const PAGE_SIZE = 5;
 
@@ -42,14 +50,21 @@ const INITIAL_FILTERS = {
 const EmployeeManagement = () => {
   const navigate = useNavigate();
 
-  const { data = { employees: [], counts: {} }, isLoading, isError, error } = useEmployees();
-  const {employees,counts} = data;
+  const {
+    data = { employees: [], counts: {} },
+    isLoading,
+    isError,
+    error,
+  } = useEmployees();
+  const { employees = [], counts = {} } = data;
   const { data: departments = [] } = useDepartments();
 
   const createEmployeeMutation = useCreateEmployee();
   const updateEmployeeMutation = useUpdateEmployee();
   const deleteEmployeeMutation = useDeleteEmployee();
 
+  const [selectedEmployeeForDelete, setSelectedEmployeeForDelete] =
+    useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingEmployee, setEditingEmployee] = useState(null);
   const [employeeForm, setEmployeeForm] = useState(INITIAL_FORM_STATE);
@@ -57,27 +72,25 @@ const EmployeeManagement = () => {
   const [page, setPage] = useState(1);
 
   const departmentOptions = useMemo(() => {
-    return departments.map((dept) => ({
+    return (departments || []).map((dept) => ({
       label: dept.name,
       value: dept.id,
     }));
   }, [departments]);
 
-  // statistics
-  const statistics = useMemo(()=>{
-    return{
-      total: counts.total_employees,
-      active: counts.active_employees,
-      inactive: counts.inactive_employees,
-      fingerprintRegistered: counts.fp_registered,
-    }
-  },[counts])
+  const statistics = useMemo(() => {
+    return {
+      total: counts?.total_employees ?? 0,
+      active: counts?.active_employees ?? 0,
+      inactive: counts?.inactive_employees ?? 0,
+      fingerprintRegistered: counts?.fp_registered ?? 0,
+    };
+  }, [counts]);
 
-  // Filter logic aligned with normalized model
   const filteredEmployees = useMemo(() => {
     const query = filters.search.trim().toLowerCase();
 
-    return employees.filter((employee) => {
+    return (employees || []).filter((employee) => {
       const matchesSearch =
         !query ||
         employee.name?.toLowerCase().includes(query) ||
@@ -88,7 +101,8 @@ const EmployeeManagement = () => {
         String(employee.departmentId) === String(filters.department);
 
       const matchesStatus =
-        !filters.status || employee.status?.toLowerCase() === filters.status.toLowerCase();
+        !filters.status ||
+        employee.status?.toLowerCase() === filters.status.toLowerCase();
 
       const matchesFingerprint =
         !filters.fingerprint ||
@@ -96,18 +110,22 @@ const EmployeeManagement = () => {
           ? employee.fingerprintRegistered
           : !employee.fingerprintRegistered);
 
-      return matchesSearch && matchesDept && matchesStatus && matchesFingerprint;
+      return (
+        matchesSearch && matchesDept && matchesStatus && matchesFingerprint
+      );
     });
   }, [employees, filters]);
 
-  const totalPages = Math.max(1, Math.ceil(filteredEmployees.length / PAGE_SIZE));
+  const totalPages = Math.max(
+    1,
+    Math.ceil(filteredEmployees.length / PAGE_SIZE)
+  );
 
   const paginatedEmployees = useMemo(() => {
     const startIndex = (page - 1) * PAGE_SIZE;
     return filteredEmployees.slice(startIndex, startIndex + PAGE_SIZE);
   }, [filteredEmployees, page]);
 
-  // Handlers
   const handleOpenAddEmployee = () => {
     setEditingEmployee(null);
     setEmployeeForm(INITIAL_FORM_STATE);
@@ -119,7 +137,7 @@ const EmployeeManagement = () => {
     setEmployeeForm({
       employeeId: employee.employeeId,
       name: employee.name,
-      department: employee.departmentId || "", // Set value to ID for select match
+      department: employee.departmentId || "",
       designation: employee.designation,
       phone: employee.phone,
       status: employee.status,
@@ -140,17 +158,37 @@ const EmployeeManagement = () => {
       designation: formData.designation,
       mobile_number: formData.phone,
       status: formData.status,
-      ...(editingEmployee ? {} : { device_ip: "192.168.0.112", device_port: 4370 }),
+      // ...(editingEmployee
+      //   ? {}
+      //   : { device_ip: "192.168.0.112", device_port: 4370 }),
     };
 
     if (editingEmployee) {
       updateEmployeeMutation.mutate(
         { id: editingEmployee.id, payload },
-        { onSuccess: handleCloseEmployeeModal }
+        {
+          onSuccess: () => {
+            toast.success("Employee updated successfully!");
+            handleCloseEmployeeModal();
+          },
+          onError: (err) => {
+            toast.error(
+              err?.response?.data?.message || "Failed to update employee."
+            );
+          },
+        }
       );
     } else {
       createEmployeeMutation.mutate(payload, {
-        onSuccess: handleCloseEmployeeModal,
+        onSuccess: () => {
+          toast.success("Employee created successfully!");
+          handleCloseEmployeeModal();
+        },
+        onError: (err) => {
+          toast.error(
+            err?.response?.data?.message || "Failed to create employee."
+          );
+        },
       });
     }
   };
@@ -164,14 +202,31 @@ const EmployeeManagement = () => {
     [navigate]
   );
 
-  const handleDeleteEmployee = useCallback(
-    (id) => {
-      if (window.confirm("Are you sure you want to delete this employee?")) {
-        deleteEmployeeMutation.mutate(id);
-      }
-    },
-    [deleteEmployeeMutation]
-  );
+  const handleOpenDeleteConfirm = useCallback((employee) => {
+    setSelectedEmployeeForDelete(employee);
+  }, []);
+
+  const handleCloseDeleteConfirm = useCallback(() => {
+    if (!deleteEmployeeMutation.isPending) {
+      setSelectedEmployeeForDelete(null);
+    }
+  }, [deleteEmployeeMutation.isPending]);
+
+  const handleConfirmDelete = useCallback(() => {
+    if (!selectedEmployeeForDelete) return;
+
+    deleteEmployeeMutation.mutate(selectedEmployeeForDelete.id, {
+      onSuccess: () => {
+        toast.success("Employee deleted successfully!");
+        setSelectedEmployeeForDelete(null);
+      },
+      onError: (err) => {
+        toast.error(
+          err?.response?.data?.message || "Failed to delete employee."
+        );
+      },
+    });
+  }, [selectedEmployeeForDelete, deleteEmployeeMutation]);
 
   const handleFilterChange = (name, value) => {
     setFilters((prev) => ({ ...prev, [name]: value }));
@@ -220,7 +275,7 @@ const EmployeeManagement = () => {
         render: (employee) => (
           <Badge
             variant={
-              employee.status.toLowerCase() === "active" ? "success" : "danger"
+              employee.status?.toLowerCase() === "active" ? "success" : "danger"
             }
           >
             {employee.status}
@@ -231,9 +286,7 @@ const EmployeeManagement = () => {
         key: "fingerprint",
         header: "Fingerprint",
         render: (employee) => (
-          <Badge
-            variant={employee.fingerprintRegistered ? "info" : "default"}
-          >
+          <Badge variant={employee.fingerprintRegistered ? "info" : "default"}>
             {employee.fingerprintRegistered ? "Registered" : "Not Registered"}
           </Badge>
         ),
@@ -264,8 +317,7 @@ const EmployeeManagement = () => {
             <button
               type="button"
               className="employee-action-button employee-delete-button"
-              onClick={() => handleDeleteEmployee(employee.id)}
-              disabled={deleteEmployeeMutation.isPending}
+              onClick={() => handleOpenDeleteConfirm(employee)}
               title="Delete employee"
               aria-label="Delete employee"
             >
@@ -275,13 +327,26 @@ const EmployeeManagement = () => {
         ),
       },
     ],
-    [handleViewEmployee, handleOpenEditEmployee, handleDeleteEmployee, deleteEmployeeMutation.isPending]
+    [
+      handleViewEmployee,
+      handleOpenEditEmployee,
+      handleOpenDeleteConfirm,
+    ]
   );
 
   const toolbarFilters = useMemo(
     () => [
-      { name: "search", type: "search", placeholder: "Search by name or employee ID..." },
-      { name: "department", type: "select", placeholder: "All Departments", options: departmentOptions },
+      {
+        name: "search",
+        type: "search",
+        placeholder: "Search by name or employee ID...",
+      },
+      {
+        name: "department",
+        type: "select",
+        placeholder: "All Departments",
+        options: departmentOptions,
+      },
       {
         name: "status",
         type: "select",
@@ -330,16 +395,32 @@ const EmployeeManagement = () => {
 
       <div className="row g-3 employee-statistics">
         <div className="col-12 col-sm-6 col-xl-3">
-          <StatCard title="Total Employees" value={statistics.total} icon={FaUsers} />
+          <StatCard
+            title="Total Employees"
+            value={statistics.total}
+            icon={FaUsers}
+          />
         </div>
         <div className="col-12 col-sm-6 col-xl-3">
-          <StatCard title="Active Employees" value={statistics.active} icon={FaUserCheck} />
+          <StatCard
+            title="Active Employees"
+            value={statistics.active}
+            icon={FaUserCheck}
+          />
         </div>
         <div className="col-12 col-sm-6 col-xl-3">
-          <StatCard title="Inactive Employees" value={statistics.inactive} icon={FaUserTimes} />
+          <StatCard
+            title="Inactive Employees"
+            value={statistics.inactive}
+            icon={FaUserTimes}
+          />
         </div>
         <div className="col-12 col-sm-6 col-xl-3">
-          <StatCard title="FP Registered" value={statistics.fingerprintRegistered} icon={FaFingerprint} />
+          <StatCard
+            title="FP Registered"
+            value={statistics.fingerprintRegistered}
+            icon={FaFingerprint}
+          />
         </div>
       </div>
 
@@ -377,7 +458,23 @@ const EmployeeManagement = () => {
         setFormData={setEmployeeForm}
         departmentOptions={departmentOptions}
         isEditing={Boolean(editingEmployee)}
-        isSubmitting={createEmployeeMutation.isPending || updateEmployeeMutation.isPending}
+        isSubmitting={
+          createEmployeeMutation.isPending || updateEmployeeMutation.isPending
+        }
+      />
+
+      <ConfirmDialog
+        show={Boolean(selectedEmployeeForDelete)}
+        isOpen={Boolean(selectedEmployeeForDelete)}
+        title="Delete Employee"
+        message={`Are you sure you want to delete ${selectedEmployeeForDelete?.name || "this employee"}? This action cannot be undone.`}
+        confirmText="Delete Employee"
+        cancelText="Cancel"
+        variant="danger"
+        isLoading={deleteEmployeeMutation.isPending}
+        onConfirm={handleConfirmDelete}
+        onClose={handleCloseDeleteConfirm}
+        onCancel={handleCloseDeleteConfirm}
       />
     </div>
   );

@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { FiPlus } from "react-icons/fi";
+import toast from "react-hot-toast";
 
 import DepartmentCard from "../components/DepartmentCard/DepartmentCard";
 import DepartmentModal from "../components/DepartmentModal/DepartmentModal";
@@ -12,6 +13,7 @@ import {
 
 import "./DepartmentManagement.css";
 import LoadingSpinner from "../../../components/LoadingSpinner/LoadingSpinner";
+import ConfirmDialog from "../../../components/ConfirmDialog/ConfirmDialog";
 
 const DepartmentManagement = () => {
   const { data: departments = [], isLoading, isError } = useDepartments();
@@ -19,6 +21,8 @@ const DepartmentManagement = () => {
   const updateDepartmentMutation = useUpdateDepartment();
   const deleteDepartmentMutation = useDeleteDepartment();
 
+  const [selectedDepartmentForDelete, setSelectedDepartmentForDelete] =
+    useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedDepartment, setSelectedDepartment] = useState(null);
   const [formData, setFormData] = useState({
@@ -46,10 +50,23 @@ const DepartmentManagement = () => {
     setIsModalOpen(true);
   };
 
-  const handleDelete = (id) => {
-    if (window.confirm("Are you sure you want to delete this department!")){
-      deleteDepartmentMutation.mutate(id)
-    }
+  const handleDelete = (department) => {
+    setSelectedDepartmentForDelete(department);
+  };
+  const handleConfirmDelete = () => {
+    if (!selectedDepartmentForDelete) return;
+
+    deleteDepartmentMutation.mutate(selectedDepartmentForDelete.id, {
+      onSuccess: () => {
+        toast.success("Department deleted successfully!");
+        setSelectedDepartmentForDelete(null);
+      },
+      onError: (err) => {
+        toast.error(
+          err?.response?.data?.message || "Failed to delete department.",
+        );
+      },
+    });
   };
 
   const handleFormSubmit = (data) => {
@@ -63,15 +80,27 @@ const DepartmentManagement = () => {
         { id: selectedDepartment.id, payload },
         {
           onSuccess: () => {
+            toast.success("Department updated successfully!");
             setIsModalOpen(false);
             setSelectedDepartment(null);
           },
-        }
+          onError: (err) => {
+            toast.error(
+              err?.response?.data?.message || "Failed to update department.",
+            );
+          },
+        },
       );
     } else {
       createDepartmentMutation.mutate(payload, {
         onSuccess: () => {
+          toast.success("Department created successfully!");
           setIsModalOpen(false);
+        },
+        onError: (err) => {
+          toast.error(
+            err?.response?.data?.message || "Failed to create department.",
+          );
         },
       });
     }
@@ -83,14 +112,17 @@ const DepartmentManagement = () => {
   };
 
   if (isLoading) {
-    return <LoadingSpinner message="Loading Departments" fullPage/>;
+    return <LoadingSpinner message="Loading Departments" fullPage />;
   }
 
   if (isError) {
-    return <div className="department-management">Failed to load departments.</div>;
+    return (
+      <div className="department-management">Failed to load departments.</div>
+    );
   }
 
-  const isSubmitting = createDepartmentMutation.isPending || updateDepartmentMutation.isPending
+  const isSubmitting =
+    createDepartmentMutation.isPending || updateDepartmentMutation.isPending;
 
   return (
     <div className="department-management">
@@ -129,6 +161,17 @@ const DepartmentManagement = () => {
         setFormData={setFormData}
         isEditing={Boolean(selectedDepartment)}
         isSubmitting={isSubmitting}
+      />
+
+      <ConfirmDialog
+        show={Boolean(selectedDepartmentForDelete)}
+        title="Delete Department"
+        message={`Are you sure you want to delete ${selectedDepartmentForDelete?.name || "this department"}?`}
+        confirmText="Delete Department"
+        variant="danger"
+        isLoading={deleteDepartmentMutation.isPending}
+        onConfirm={handleConfirmDelete}
+        onClose={() => setSelectedDepartmentForDelete(null)}
       />
     </div>
   );

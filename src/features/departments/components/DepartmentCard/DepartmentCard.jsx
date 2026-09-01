@@ -62,7 +62,7 @@ const DepartmentCard = ({ department, onEdit, onDelete }) => {
                 className="menu-item delete"
                 onClick={() => {
                   setShowMenu(false);
-                  onDelete?.(id);
+                  onDelete?.(department);
                 }}
               >
                 <FiTrash2 /> Delete

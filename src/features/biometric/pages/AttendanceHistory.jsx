@@ -1,22 +1,14 @@
 import { useState, useMemo, useCallback } from "react";
-import {
-  mockHistoryData,
-  mockDepartments,
-  mockEmployees,
-} from "./mockBiometricData";
-import Avatar from "../../components/Avatar/Avatar";
-import Badge from "../../components/Badge/Badge";
-import TableToolbar from "../../components/TableToolbar/TableToolbar";
-import DataTable from "../../components/DataTable/DataTable";
-import TablePagination from "../../components/TablePagination/TablePagination";
+import Avatar from "../../../components/Avatar/Avatar";
+import Badge from "../../../components/Badge/Badge";
+import TableToolbar from "../../../components/TableToolbar/TableToolbar";
+import DataTable from "../../../components/DataTable/DataTable";
+import TablePagination from "../../../components/TablePagination/TablePagination";
+import { useAttendanceHistory } from "../api/biometricApi";
 
-export default function AttendanceHistory({
-  historyData = mockHistoryData,
-  departments = mockDepartments,
-  employees = mockEmployees,
-}) {
+export default function AttendanceHistory({ departments = [] }) {
   const [filterValues, setFilterValues] = useState({
-    empId: "",
+    search: "",
     dept: "",
     status: "",
     startDate: "",
@@ -26,6 +18,9 @@ export default function AttendanceHistory({
   const [currentPage, setCurrentPage] = useState(1);
   const pageSize = 10;
 
+  // Fetch API history data (search will map directly to ?search= in backend)
+  const { data: historyList = [], isLoading } = useAttendanceHistory(filterValues);
+
   const handleFilterChange = useCallback((name, value) => {
     setFilterValues((prev) => ({ ...prev, [name]: value }));
     setCurrentPage(1);
@@ -33,7 +28,7 @@ export default function AttendanceHistory({
 
   const handleClearFilters = useCallback(() => {
     setFilterValues({
-      empId: "",
+      search: "",
       dept: "",
       status: "",
       startDate: "",
@@ -42,26 +37,20 @@ export default function AttendanceHistory({
     setCurrentPage(1);
   }, []);
 
-  // Configure filters specifically for your TableToolbar component structure
   const filterConfig = useMemo(
     () => [
       {
-        name: "empId",
-        type: "select",
-        wide: true,
-        placeholder: "All Employees",
-        options: employees.map((e) => ({
-          label: `${e.name} (${e.empId})`,
-          value: String(e.id),
-        })),
+        name: "search",
+        type: "search",
+        placeholder: "Search employee...",
       },
       {
         name: "dept",
         type: "select",
         placeholder: "All Departments",
         options: departments.map((d) => ({
-          label: d.name,
-          value: d.name,
+          label: d.name || d.department_name,
+          value: d.name || d.department_name,
         })),
       },
       {
@@ -83,37 +72,20 @@ export default function AttendanceHistory({
         type: "date",
       },
     ],
-    [employees, departments],
+    [departments]
   );
 
-  const filteredHistory = useMemo(() => {
-    const { empId, dept, status, startDate, endDate } = filterValues;
-
-    return (historyData || []).filter((item) => {
-      const emp = employees?.find((e) => e.id === item.empId);
-
-      if (empId && item.empId !== Number(empId)) return false;
-      if (dept && (item.dept || emp?.dept) !== dept) return false;
-      if (status && item.status !== status) return false;
-      if (startDate && item.date < startDate) return false;
-      if (endDate && item.date > endDate) return false;
-
-      return true;
-    });
-  }, [historyData, employees, filterValues]);
+  const totalRecords = historyList.length;
+  const totalPages = Math.ceil(totalRecords / pageSize) || 1;
 
   const paginatedData = useMemo(() => {
     const start = (currentPage - 1) * pageSize;
-    return filteredHistory.slice(start, start + pageSize);
-  }, [filteredHistory, currentPage, pageSize]);
+    return historyList.slice(start, start + pageSize);
+  }, [historyList, currentPage, pageSize]);
 
-  // Column definitions utilizing your DataTable render schema
   const columns = useMemo(
     () => [
-      {
-        key: "date",
-        header: "DATE",
-      },
+      { key: "date", header: "DATE" },
       {
         key: "empName",
         header: "EMPLOYEE",
@@ -158,7 +130,7 @@ export default function AttendanceHistory({
         },
       },
     ],
-    [],
+    []
   );
 
   return (
@@ -168,7 +140,6 @@ export default function AttendanceHistory({
           <h1>Attendance History</h1>
           <p>Employee-wise and department-wise attendance records</p>
         </div>
-        
       </div>
 
       <TableToolbar
@@ -178,20 +149,31 @@ export default function AttendanceHistory({
         onClear={handleClearFilters}
       />
 
-      <DataTable
-        columns={columns}
-        data={paginatedData}
-        rowKey="id"
-        emptyMessage="No attendance records found matching your filters."
-      />
+      {isLoading ? (
+        <div className="text-center py-5 text-muted">
+          <div className="spinner-border text-primary me-2" role="status" />
+          Loading attendance history...
+        </div>
+      ) : (
+        <>
+          <DataTable
+            columns={columns}
+            data={paginatedData}
+            rowKey="id"
+            emptyMessage="No attendance records found matching your query."
+          />
 
-      {filteredHistory.length > 0 && (
-        <TablePagination
-          totalItems={filteredHistory.length}
-          pageSize={pageSize}
-          currentPage={currentPage}
-          onPageChange={setCurrentPage}
-        />
+          {totalRecords > 0 && (
+            <TablePagination
+              page={currentPage}
+              totalPages={totalPages}
+              totalRecords={totalRecords}
+              pageSize={pageSize}
+              onPrevious={() => setCurrentPage((p) => Math.max(p - 1, 1))}
+              onNext={() => setCurrentPage((p) => Math.min(p + 1, totalPages))}
+            />
+          )}
+        </>
       )}
     </div>
   );

@@ -1,80 +1,92 @@
 import React, { useState, useRef, useEffect, useCallback } from "react";
 import { FiCalendar, FiChevronDown, FiSearch, FiX } from "react-icons/fi";
 import "./TableToolbar.css";
-
+ 
 const MONTHS = [
   "Jan", "Feb", "Mar", "Apr",
   "May", "Jun", "Jul", "Aug",
   "Sep", "Oct", "Nov", "Dec",
 ];
-
+ 
 const getCurrentYYYYMM = () => {
   const now = new Date();
   const year = now.getFullYear();
   const month = String(now.getMonth() + 1).padStart(2, "0");
   return `${year}-${month}`;
 };
-
-const DEFAULT_YEARS = [2024, 2025, 2026, 2027, 2028, 2029, 2030];
-
+ 
+const getYearsList = () => {
+  const startYear = 1900;
+  const endYear = 2100;
+ 
+  return Array.from(
+    { length: endYear - startYear + 1 },
+    (_, index) => startYear + index,
+  );
+};
+ 
 const MonthPickerField = ({ filter, values, onChange }) => {
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef(null);
-
+ 
   // Fallback to control value, default filter value, or dynamic current year-month
   const rawValue = values[filter.name] || filter.defaultValue || getCurrentYYYYMM();
-
+ 
   // Safely parse Year and Month
   const [yearStr, monthStr] = rawValue.split("-");
   const parsedYear = parseInt(yearStr, 10);
   const parsedMonth = parseInt(monthStr, 10);
-
+ 
   const currentYear = !isNaN(parsedYear) ? parsedYear : new Date().getFullYear();
-  const currentMonthIdx = !isNaN(parsedMonth) && parsedMonth >= 1 && parsedMonth <= 12
-    ? parsedMonth - 1
-    : 0;
-
-  const yearsList = filter.years || DEFAULT_YEARS;
-
+  const currentMonthIdx =
+    !Number.isNaN(parsedMonth) &&
+    parsedMonth >= 1 &&
+    parsedMonth <= 12
+      ? parsedMonth - 1
+      : new Date().getMonth();
+ 
+ 
+  const yearsList = filter.years || getYearsList();
+ 
   const handleClose = useCallback(() => setIsOpen(false), []);
-
+ 
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
         handleClose();
       }
     };
-
+ 
     const handleKeyDown = (event) => {
       if (event.key === "Escape") {
         handleClose();
       }
     };
-
+ 
     if (isOpen) {
       document.addEventListener("mousedown", handleClickOutside);
       document.addEventListener("keydown", handleKeyDown);
     }
-
+ 
     return () => {
       document.removeEventListener("mousedown", handleClickOutside);
       document.removeEventListener("keydown", handleKeyDown);
     };
   }, [isOpen, handleClose]);
-
+ 
   const handleSelectMonth = (monthIndex) => {
     const formattedMonth = String(monthIndex + 1).padStart(2, "0");
     onChange(filter.name, `${currentYear}-${formattedMonth}`);
     setIsOpen(false);
   };
-
+ 
   const handleSelectYear = (year) => {
     const formattedMonth = String(currentMonthIdx + 1).padStart(2, "0");
     onChange(filter.name, `${year}-${formattedMonth}`);
   };
-
+ 
   const displayLabel = `${MONTHS[currentMonthIdx]}, ${currentYear}`;
-
+ 
   return (
     <div className="toolbar-month-wrapper" ref={dropdownRef}>
       <button
@@ -90,7 +102,7 @@ const MonthPickerField = ({ filter, values, onChange }) => {
         </span>
         <FiChevronDown className="toolbar-select-icon" />
       </button>
-
+ 
       {isOpen && (
         <div className="month-picker-popover" role="dialog" aria-label="Month Picker">
           <div className="year-display-header">{currentYear}</div>
@@ -106,7 +118,7 @@ const MonthPickerField = ({ filter, values, onChange }) => {
               </button>
             ))}
           </div>
-
+ 
           <div className="years-scroll-list">
             {yearsList.map((y) => (
               <button
@@ -124,7 +136,7 @@ const MonthPickerField = ({ filter, values, onChange }) => {
     </div>
   );
 };
-
+ 
 const TableToolbar = ({
   filters = [],
   values = {},
@@ -135,7 +147,7 @@ const TableToolbar = ({
   const handleChange = (name, value) => {
     onChange?.(name, value);
   };
-
+ 
   return (
     <div className="table-toolbar">
       <div className="table-toolbar-filters">
@@ -153,7 +165,7 @@ const TableToolbar = ({
               </div>
             );
           }
-
+ 
           if (filter.type === "select") {
             return (
               <div
@@ -178,7 +190,7 @@ const TableToolbar = ({
               </div>
             );
           }
-
+ 
           if (filter.type === "date") {
             return (
               <div className="toolbar-date-wrapper" key={filter.name}>
@@ -192,7 +204,7 @@ const TableToolbar = ({
               </div>
             );
           }
-
+ 
           if (filter.type === "month") {
             return (
               <MonthPickerField
@@ -203,10 +215,10 @@ const TableToolbar = ({
               />
             );
           }
-
+ 
           return null;
         })}
-
+ 
         {onClear && (
           <button
             type="button"
@@ -218,10 +230,13 @@ const TableToolbar = ({
           </button>
         )}
       </div>
-
+ 
       {actions && <div className="table-toolbar-actions">{actions}</div>}
     </div>
   );
 };
-
+ 
 export default TableToolbar;
+ 
+
+ 

@@ -4,9 +4,8 @@ import DepartmentManagement from "../features/departments/pages/DepartmentManage
 import DepartmentEmployees from "../features/departments/pages/DepartmentEmployees";
 import EmployeeManagement from "../features/employees/pages/EmployeeManagement";
 import EmployeeDetails from "../features/employees/pages/EmployeeDetails";
-import BiometricEnrollment from "../features/biometric/BiometricEnrollment";
-import AttendancePunch from "../features/biometric/AttendancePunch";
-import AttendanceHistory from "../features/biometric/AttendanceHistory";
+import BiometricEnrollment from "../features/biometric/pages/BiometricEnrollment";
+import AttendanceHistory from "../features/biometric/pages/AttendanceHistory";
 import Dashboard from "../features/dashboard/pages/Dashboard";
 import Reports from "../features/reports/pages/Reports";
 import Login from "../features/auth/pages/Login";
@@ -28,8 +27,6 @@ const App = () => {
         <Route path="/employees/:id" element={<EmployeeDetails />} />
 
         <Route path="/biometrics" element={<BiometricEnrollment/>} />
-
-        <Route path="/attendance" element={<AttendancePunch />} />
 
         <Route path="/attendance/history" element={<AttendanceHistory />} />
 

@@ -6,6 +6,7 @@ const EMPLOYEE_ENDPOINTS = {
   CREATE: "/employee/addemployeewithdevice",
   UPDATE: (id) => `/employee/edit-employee-with-device/${id}`,
   DELETE: (id) => `/employee/delete-employee-with-device/${id}`,
+  GET_BY_ID: (id) => `/attendence/monthlyattendance/${id}`
 };
 
 export const getEmployees = async () => {
@@ -25,6 +26,11 @@ export const updateEmployee = async ({ id, payload }) => {
 
 export const deleteEmployee = async (id) => {
   const { data } = await axiosInstance.delete(EMPLOYEE_ENDPOINTS.DELETE(id) , {data:{}} );
+  return data;
+};
+
+export const getEmployeeAttendance = async (id) => {
+  const { data } = await axiosInstance.get(EMPLOYEE_ENDPOINTS.GET_BY_ID(id));
   return data;
 };
 
@@ -86,6 +92,71 @@ export const useDeleteEmployee = () => {
     mutationFn: deleteEmployee,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["employees"] });
+    },
+  });
+};
+
+export const useEmployeeAttendance = (employeeId) => {
+  return useQuery({
+    queryKey: ["attendance", employeeId],
+    queryFn: () => getEmployeeAttendance(employeeId),
+    enabled: Boolean(employeeId),
+    select: (response) => {
+      const summary = response?.summary || { present: 0, late: 0, absent: 0, total_marked_days: 0 };
+      const rawList = response?.data || [];
+
+      const attendanceList = rawList.map((item, index) => {
+        // Fallback to punch_in if available, otherwise attendance_date
+        const targetDateStr = item.punch_in || item.attendance_date;
+        const dateObj = targetDateStr ? new Date(targetDateStr) : null;
+
+        // Format date according to local timezone (YYYY-MM-DD)
+        let formattedDate = "N/A";
+        if (dateObj && !isNaN(dateObj.getTime())) {
+          const year = dateObj.getFullYear();
+          const month = String(dateObj.getMonth() + 1).padStart(2, "0");
+          const day = String(dateObj.getDate()).padStart(2, "0");
+          console.log(`Record #${index + 1}:`, {
+            rawString: targetDateStr,
+            day: day,
+            month: month,
+            year: year,
+          });
+          formattedDate = `${year}-${month}-${day}`;
+        }
+
+        const formatTime = (timeStr) => {
+          if (!timeStr) return "--";
+          const d = new Date(timeStr);
+          return isNaN(d.getTime())
+            ? "--"
+            : d.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", hour12: true });
+        };
+
+        let hrs = "--";
+        if (item.punch_in && item.punch_out) {
+          const diffMs = new Date(item.punch_out) - new Date(item.punch_in);
+          if (diffMs > 0) {
+            hrs = (diffMs / (1000 * 60 * 60)).toFixed(1);
+          }
+        }
+
+        return {
+          id: index + 1,
+          date: formattedDate,
+          punchIn: formatTime(item.punch_in),
+          punchOut: formatTime(item.punch_out),
+          hrs,
+          status: item.status || (item.is_late ? "Late" : "Present"),
+        };
+      });
+
+      return {
+        employeeName: response?.employee_name || "",
+        employeeId: response?.employee_id || "",
+        summary,
+        attendanceList,
+      };
     },
   });
 };

@@ -7,7 +7,7 @@
   --bg-light: #f8fafc;
   --primary-blue: #0066ff;
 }
-
+ 
 .reports-container {
   background: #ffffff;
   border-radius: 16px;
@@ -16,7 +16,7 @@
   width: 100%;
   box-sizing: border-box;
 }
-
+ 
 /* 1. HEADER & MODE TOGGLE */
 .reports-header {
   display: flex;
@@ -26,20 +26,20 @@
   gap: 16px;
   margin-bottom: 20px;
 }
-
+ 
 .reports-header h2 {
   font-size: 20px;
   font-weight: 700;
   color: var(--navy);
   margin: 0;
 }
-
+ 
 .sub-heading {
   font-size: 13px;
   color: var(--text-muted);
   margin: 4px 0 0 0;
 }
-
+ 
 .toggle-group {
   display: flex;
   background: #f1f5f9;
@@ -47,7 +47,7 @@
   border-radius: 10px;
   gap: 4px;
 }
-
+ 
 .toggle-btn {
   border: none;
   background: transparent;
@@ -59,17 +59,17 @@
   cursor: pointer;
   transition: all 0.2s ease;
 }
-
+ 
 .toggle-btn.active {
   background: var(--navy);
   color: #ffffff;
 }
-
+ 
 /* 2. TOOLBAR */
 .toolbar-section {
   margin-bottom: 20px;
 }
-
+ 
 /* 3. METRIC STAT CARDS */
 .metrics-grid {
   display: grid;
@@ -77,24 +77,24 @@
   gap: 16px;
   margin-bottom: 24px;
 }
-
+ 
 .metrics-grid .stat-card {
   transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
-
+ 
 .metrics-grid .stat-card:hover {
   transform: translateY(-2px);
   box-shadow: 0 6px 20px rgba(15, 23, 42, 0.06);
 }
-
+ 
 /* 4. DATA GRID */
 .reports-data-grid {
   display: grid;
-  grid-template-columns: 280px 1fr;
+  grid-template-columns: 1fr;
   gap: 24px;
   align-items: stretch;
 }
-
+ 
 .chart-panel {
   display: flex;
   justify-content: center;
@@ -107,7 +107,7 @@
   min-height: 280px;
   box-sizing: border-box;
 }
-
+ 
 .pie-wrapper {
   position: relative;
   width: 100%;
@@ -115,7 +115,7 @@
   height: 240px;
   margin: 0 auto;
 }
-
+ 
 .table-panel {
   border: 1px solid var(--border-color);
   border-radius: 12px;
@@ -125,11 +125,11 @@
   flex-direction: column;
   justify-content: space-between;
 }
-
+ 
 .table-content-area {
   flex: 1;
 }
-
+ 
 .employee-info {
   display: flex;
   align-items: center;
@@ -137,45 +137,46 @@
   font-weight: 600;
   color: #0b2b4c;
 }
-
+ 
 /* 5. RESPONSIVE BREAKPOINTS */
 @media (max-width: 1200px) {
   .metrics-grid {
     grid-template-columns: repeat(2, 1fr);
   }
-
-  .reports-data-grid {
+ 
+  /* .reports-data-grid {
     grid-template-columns: 1fr;
   }
-
+ 
   .chart-panel {
     width: 100%;
     max-width: 360px;
     margin: 0 auto;
     box-sizing: border-box;
-  }
+  } */
 }
-
+ 
 @media (max-width: 576px) {
   .reports-container {
     padding: 16px;
   }
-
+ 
   .metrics-grid {
     grid-template-columns: 1fr;
   }
-
+ 
   .reports-header {
     flex-direction: column;
     align-items: flex-start;
   }
-
+ 
   .toggle-group {
     width: 100%;
   }
-
+ 
   .toggle-btn {
     flex: 1;
     text-align: center;
   }
 }
+ 

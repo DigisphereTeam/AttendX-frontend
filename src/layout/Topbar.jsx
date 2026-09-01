@@ -1,44 +1,21 @@
+
 import { useEffect, useState } from "react";
-import { FiCalendar, FiClock, FiMenu } from "react-icons/fi";
+import {
+  FiCalendar,
+  FiClock,
+  FiMenu,
+  FiChevronDown,
+  FiLogOut,
+} from "react-icons/fi";
+import { useNavigate } from "react-router-dom";
 
-// const pageMeta = {
-//   "/dashboard": {
-//     title: "Dashboard",
-//     subtitle: "Welcome back, here's what's happening today.",
-//   },
-//   "/employees": {
-//     title: "Employee Management",
-//     subtitle: "Manage your organization's employee records.",
-//   },
-//   "/departments": {
-//     title: "Department Management",
-//     subtitle: "Organize employees by department.",
-//   },
-//   "/employees/profile": {
-//     title: "Employee Profile",
-//     subtitle: "View detailed employee information.",
-//   },
-//   "/biometrics": {
-//     title: "Biometric Enrollment",
-//     subtitle: "Register employee fingerprints for attendance.",
-//   },
-//   "/attendance": {
-//     title: "Attendance",
-//     subtitle: "Fingerprint-based punch in / punch out.",
-//   },
-//   "/attendance/history": {
-//     title: "Attendance History",
-//     subtitle: "Browse historical attendance records.",
-//   },
-//   "/reports": {
-//     title: "Reports",
-//     subtitle: "Daily and monthly attendance analytics.",
-//   },
-// };
-
+import { clearAuth } from "../features/auth/utils/authStorage";
 const Topbar = ({ onMenuClick, currentPath }) => {
   const [currentDate, setCurrentDate] = useState("");
   const [currentTime, setCurrentTime] = useState("");
+  const [profileOpen, setProfileOpen] = useState(false);
+
+  const navigate = useNavigate();
 
   useEffect(() => {
     const updateDateTime = () => {
@@ -53,9 +30,7 @@ const Topbar = ({ onMenuClick, currentPath }) => {
         })
       );
 
-      setCurrentTime(
-        now.toLocaleTimeString("en-IN")
-      );
+      setCurrentTime(now.toLocaleTimeString("en-IN"));
     };
 
     updateDateTime();
@@ -65,8 +40,16 @@ const Topbar = ({ onMenuClick, currentPath }) => {
     return () => clearInterval(interval);
   }, []);
 
-  // const meta =
-  //   pageMeta[currentPath] || pageMeta["/dashboard"];
+  const handleLogout = () => {
+    // Clear token and user information
+    clearAuth();
+
+    // Close profile dropdown
+    setProfileOpen(false);
+
+    // Navigate to Sign In page
+    navigate("/login");
+  };
 
   return (
     <header className="app-topbar">
@@ -79,19 +62,10 @@ const Topbar = ({ onMenuClick, currentPath }) => {
         >
           <FiMenu />
         </button>
-
-        {/* <div>
-          <h1 className="page-title">
-            {meta.title}
-          </h1>
-
-          <p className="page-subtitle">
-            {meta.subtitle}
-          </p>
-        </div> */}
       </div>
 
       <div className="topbar-right">
+        {/* Date & Time */}
         <div className="live-clock d-none d-md-flex">
           <span>
             <FiCalendar />
@@ -106,20 +80,47 @@ const Topbar = ({ onMenuClick, currentPath }) => {
           </span>
         </div>
 
-        <div className="admin-profile">
-          <div className="admin-avatar">
-            AD
-          </div>
-
-          <div className="admin-info">
-            <div className="admin-name">
-              Admin User
+        {/* Admin Profile */}
+        <div className="admin-profile-wrapper">
+          <button
+            type="button"
+            className="admin-profile"
+            onClick={() => setProfileOpen((prev) => !prev)}
+          >
+            <div className="admin-avatar">
+              AD
             </div>
 
-            <div className="admin-role">
-              HR Administrator
+            <div className="admin-info">
+              <div className="admin-name">
+                Admin User
+              </div>
+
+              <div className="admin-role">
+                HR Administrator
+              </div>
             </div>
-          </div>
+
+            <FiChevronDown
+              className={`admin-profile-arrow ${
+                profileOpen ? "open" : ""
+              }`}
+            />
+          </button>
+
+          {/* Logout Dropdown */}
+          {profileOpen && (
+            <div className="admin-profile-menu">
+              <button
+                type="button"
+                className="logout-button"
+                onClick={handleLogout}
+              >
+                <FiLogOut />
+                <span>Logout</span>
+              </button>
+            </div>
+          )}
         </div>
       </div>
     </header>
@@ -127,3 +128,4 @@ const Topbar = ({ onMenuClick, currentPath }) => {
 };
 
 export default Topbar;
+

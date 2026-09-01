@@ -1,66 +1,61 @@
-import React, { useState } from "react";
-import axios from "axios";
+import { useState } from "react";
+ 
 import { useNavigate } from "react-router-dom";
+ 
+import toast from "react-hot-toast";
+ 
+import { login } from "../api/authApi";
+import { saveToken } from "../utils/authStorage";
+ 
 import "./Login.css";
-
+ 
 export default function Login() {
-  const navigate = useNavigate();
   const [empId, setEmpId] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [rememberMe, setRememberMe] = useState(false);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
-
+ 
+  const navigate = useNavigate();
+ 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setError("");
-
+ 
     if (!empId.trim() || !password.trim()) {
       setError("Please enter both your Employee ID/Email and password.");
       return;
     }
-
+ 
+    const payload = {
+      email: empId.trim(),
+      password,
+    };
+ 
     setLoading(true);
-
-    // ---- TEMPORARY demo check (no backend yet) ----
-    // Swap this whole block for the real axios call below once
-    // your auth endpoint is ready.
-    setTimeout(() => {
-      if (empId === "admin@gmail.com" && password === "Admin@123") {
-        localStorage.setItem("token", "demo-token");
-        localStorage.setItem(
-          "user",
-          JSON.stringify({ name: "Admin", email: empId, role: "Admin" })
-        );
+    try {
+      const response = await login(payload);
+ 
+      if (response.statusCode === 200) {
+        toast.success(response.message);
+ 
+        saveToken(response.data.token);
         navigate("/dashboard", { replace: true });
       } else {
-        setError("Invalid credentials. Please try again.");
+        toast.error(response.message);
       }
-      setLoading(false);
-    }, 400);
-
-    /* ---- Real API version, use this once your backend is ready ----
-    try {
-      const res = await axios.post("/api/auth/login", {
-        empId,
-        password,
-        rememberMe,
-      });
-      localStorage.setItem("token", res.data.token);
-      localStorage.setItem("user", JSON.stringify(res.data.user));
-      navigate("/dashboard", { replace: true });
-    } catch (err) {
-      setError(
-        err?.response?.data?.message ||
-          "Invalid credentials. Please try again."
+    } catch (error) {
+      console.error("Signin Error:", error);
+ 
+      toast.error(
+        error.response?.data?.message ||
+          "Invalid credentials. Please try again.",
       );
     } finally {
       setLoading(false);
     }
-    */
   };
-
+ 
   return (
     <div className="auth-shell">
       <div className="container-fluid p-0 h-100">
@@ -74,14 +69,14 @@ export default function Login() {
                 <span>Attendance System</span>
               </div>
             </div>
-
+ 
             <div className="brand-mid">
               <h1>Office attendance, tracked the smart way.</h1>
               <p>
-                Punch in, view your history, and keep every check-in accurate
-                — all from one place built for Digisphere Tech.
+                Punch in, view your history, and keep every check-in accurate —
+                all from one place built for Digisphere Tech.
               </p>
-
+ 
               <div className="scan-motif">
                 <div className="scan-ring">
                   <i className="bi bi-fingerprint"></i>
@@ -93,12 +88,12 @@ export default function Login() {
                 </div>
               </div>
             </div>
-
+ 
             <div className="brand-foot">
               &copy; 2026 Digisphere Tech Private Limited
             </div>
           </div>
-
+ 
           {/* RIGHT: sign-in form */}
           <div className="col-12 col-lg-6 form-panel">
             <div className="form-wrap">
@@ -106,13 +101,13 @@ export default function Login() {
               <p className="sub">
                 Sign in with your employee credentials to continue.
               </p>
-
+ 
               {error && (
                 <div className="alert alert-danger py-2 px-3 mb-3" role="alert">
                   {error}
                 </div>
               )}
-
+ 
               <form onSubmit={handleSubmit} noValidate>
                 <label className="form-label" htmlFor="empId">
                   Employee Email
@@ -129,7 +124,7 @@ export default function Login() {
                     autoComplete="username"
                   />
                 </div>
-
+ 
                 <label className="form-label" htmlFor="password">
                   Password
                 </label>
@@ -153,7 +148,7 @@ export default function Login() {
                     aria-label="Toggle password visibility"
                   ></i>
                 </div>
-
+ 
                 <div className="remember-row">
                   <div className="d-flex align-items-center">
                     <input
@@ -168,12 +163,16 @@ export default function Login() {
                     </label>
                   </div>
                 </div>
-
-                <button type="submit" className="btn btn-signin" disabled={loading}>
+ 
+                <button
+                  type="submit"
+                  className="btn btn-signin"
+                  disabled={loading}
+                >
                   {loading ? "Signing in..." : "Sign In"}
                 </button>
               </form>
-
+ 
               <div className="form-foot">
                 Having trouble signing in? Contact your admin.
               </div>
