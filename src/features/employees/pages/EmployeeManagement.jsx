@@ -128,17 +128,19 @@ const EmployeeManagement = () => {
   };
 
   const handleOpenEditEmployee = useCallback((employee) => {
-    setEditingEmployee(employee);
-    setEmployeeForm({
-      employeeId: employee.employeeId,
-      name: employee.name,
-      department: employee.departmentId || "",
-      designation: employee.designation,
-      phone: employee.phone,
-      status: employee.status,
-    });
-    setIsModalOpen(true);
-  }, []);
+  setEditingEmployee(employee);
+
+  setEmployeeForm({
+    employeeId: String(employee.employeeId || ""),
+    name: String(employee.name || ""),
+    department: String(employee.departmentId || ""),
+    designation: String(employee.designation || ""),
+    phone: String(employee.phone || ""),
+    status: String(employee.status || ""),
+  });
+
+  setIsModalOpen(true);
+}, []);
 
   const handleCloseEmployeeModal = () => {
     setIsModalOpen(false);

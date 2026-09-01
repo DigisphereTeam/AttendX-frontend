@@ -68,10 +68,16 @@ export const useEmployees = () => {
 
 export const useCreateEmployee = () => {
   const queryClient = useQueryClient();
+
   return useMutation({
     mutationFn: createEmployee,
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["employees"] });
+      queryClient.invalidateQueries({
+        queryKey: ["employees"],
+      });
+      queryClient.invalidateQueries({
+        queryKey: ["departments"],
+      });
     },
   });
 };
@@ -81,7 +87,12 @@ export const useUpdateEmployee = () => {
   return useMutation({
     mutationFn: updateEmployee,
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["employees"] });
+      queryClient.invalidateQueries({
+        queryKey: ["employees"],
+      });
+      queryClient.invalidateQueries({
+        queryKey: ["departments"],
+      });
     },
   });
 };
@@ -91,7 +102,12 @@ export const useDeleteEmployee = () => {
   return useMutation({
     mutationFn: deleteEmployee,
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["employees"] });
+      queryClient.invalidateQueries({
+        queryKey: ["employees"],
+      });
+      queryClient.invalidateQueries({
+        queryKey: ["departments"],
+      });
     },
   });
 };
@@ -106,11 +122,9 @@ export const useEmployeeAttendance = (employeeId) => {
       const rawList = response?.data || [];
 
       const attendanceList = rawList.map((item, index) => {
-        // Fallback to punch_in if available, otherwise attendance_date
         const targetDateStr = item.punch_in || item.attendance_date;
         const dateObj = targetDateStr ? new Date(targetDateStr) : null;
 
-        // Format date according to local timezone (YYYY-MM-DD)
         let formattedDate = "N/A";
         if (dateObj && !isNaN(dateObj.getTime())) {
           const year = dateObj.getFullYear();

@@ -18,7 +18,10 @@ export const employeeSchema = z.object({
   phone: z
     .string()
     .trim()
-    .regex(/^[6-9]\d{9}$/, "Enter a valid 10-digit Indian mobile number"),
+    .regex(
+      /^[6-9]\d{9}$/,
+      "Enter a valid 10-digit Indian mobile number"
+    ),
 
   status: z
     .string()
