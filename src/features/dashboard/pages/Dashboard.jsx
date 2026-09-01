@@ -38,7 +38,16 @@ ChartJS.register(
   Legend,
 );
  
+// 4th Fix: Exact icon mapping matching image_8c05be
 const statIcons = [FaUsers, FaUserCheck, FaUserTimes, FaUserClock];
+ 
+// const departmentColors = [
+//   "#4F46E5",
+//   "#06B6D4",
+//   "#10B981",
+//   "#F59E0B",
+//   "#EF4444",
+// ];
  
 const departmentColors = [
   "#0F3460",
@@ -114,10 +123,16 @@ const Dashboard = () => {
  
   if (isLoading) {
     return (
-      <LoadingSpinner/>
+      <LoadingSpinner message="Loading Dashboard data" fullPage/>
     );
   }
- 
+ if (isError) {
+    return (
+      <div className="employee-management">
+        <div className="error-card">Failed to fetch data</div>
+      </div>
+    );
+  }
   return (
     <div className="dashboard-view">
       {/* STATS ROW */}
@@ -224,7 +239,7 @@ const Dashboard = () => {
                 </div>
               ))
             ) : (
-              <p>No punch activity available.</p>
+              <p className="card-subtext ">No punch activity available.</p>
             )}
           </div>
         </div>
@@ -256,4 +271,5 @@ const Dashboard = () => {
 };
  
 export default Dashboard;
+ 
  

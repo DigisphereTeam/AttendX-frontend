@@ -4,63 +4,63 @@
   gap: 20px;
   padding: 12px;
 }
-
+ 
 .page-sub {
   font-size: 13px;
-  color: #6B7A99;
+  color: #6b7a99;
   margin-top: -12px;
 }
-
+ 
 /* GRIDS */
 .stats-grid {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
   gap: 16px;
 }
-
+ 
 .charts-grid {
   display: grid;
-  grid-template-columns: 2fr 1fr;
+  grid-template-columns: minmax(0, 1.5fr) minmax(280px, 1fr);
   gap: 16px;
   align-items: start;
 }
-
+ 
 .panels-grid {
   display: grid;
   grid-template-columns: 1.2fr 1fr;
   gap: 16px;
 }
-
+ 
 /* CARDS */
 .card-box {
   background: #ffffff;
   border-radius: 14px;
-  border: 1px solid #E7ECF3;
+  border: 1px solid #e7ecf3;
   padding: 20px;
   height: fit-content;
 }
-
+ 
 .card-heading {
   font-size: 15px;
   font-weight: 700;
-  color: #0A2647;
+  color: #0a2647;
   margin: 0;
 }
-
+ 
 .card-subtext {
   font-size: 12px;
-  color: #6B7A99;
+  color: #6b7a99;
   margin-top: 4px;
   margin-bottom: 16px; /* Spacing added above charts */
 }
-
+ 
 /* CHARTS FIXES */
 .chart-wrapper {
   position: relative;
-  height: 325px; 
+  height: 325px;
   width: 100%;
 }
-
+ 
 .doughnut-wrapper {
   position: relative;
   height: 180px;
@@ -69,22 +69,22 @@
   justify-content: center;
   align-items: center;
 }
-
+ 
 .dept-legend {
   margin-top: 16px;
   display: flex;
   flex-direction: column;
   gap: 8px;
 }
-
+ 
 .legend-item {
   display: flex;
   justify-content: space-between;
   align-items: center;
   font-size: 12.5px;
-  color: #6B7A99;
+  color: #6b7a99;
 }
-
+ 
 .dot {
   width: 8px;
   height: 8px;
@@ -92,7 +92,7 @@
   display: inline-block;
   margin-right: 8px;
 }
-
+ 
 /* PANELS & PUNCH FEED */
 .panel-header {
   display: flex;
@@ -100,10 +100,10 @@
   align-items: center;
   margin-bottom: 12px;
 }
-
+ 
 .live-badge {
-  background: #E6F9FC;
-  color: #0096C7;
+  background: #e6f9fc;
+  color: #0096c7;
   font-size: 11px;
   font-weight: 700;
   padding: 4px 10px;
@@ -112,20 +112,22 @@
   align-items: center;
   gap: 4px;
 }
-
-.punch-item, .dept-item {
+ 
+.punch-item,
+.dept-item {
   display: flex;
   align-items: center;
   justify-content: space-between;
   padding: 12px 0;
-  border-bottom: 1px solid #F0F3F8;
+  border-bottom: 1px solid #f0f3f8;
   gap: 12px;
 }
-
-.punch-item:last-child, .dept-item:last-child {
+ 
+.punch-item:last-child,
+.dept-item:last-child {
   border-bottom: none;
 }
-
+ 
 /* ALIGNMENT FIX FOR AVATAR & NAME */
 .punch-info {
   flex: 1;
@@ -133,48 +135,152 @@
   flex-direction: column;
   justify-content: center;
 }
-
+ 
 .punch-info strong {
   font-size: 13.5px;
   font-weight: 600;
-  color: #0A2647;
+  color: #0a2647;
   line-height: 1.2;
 }
-
-.punch-info p, .dept-item p {
+ 
+.punch-info p,
+.dept-item p {
   font-size: 11.5px;
-  color: #6B7A99;
+  color: #6b7a99;
   margin: 2px 0 0 0;
   line-height: 1.2;
 }
-
+ 
 .badge-late {
-  background: #FFF4E5;
-  color: #F79009;
+  background: #fff4e5;
+  color: #f79009;
   padding: 4px 10px;
   border-radius: 12px;
   font-size: 11px;
   font-weight: 700;
 }
-
+ 
 .dept-chip {
-  background: #E6F9FC;
-  color: #0096C7;
+  background: #e6f9fc;
+  color: #0096c7;
   padding: 3px 10px;
   border-radius: 6px;
   font-size: 11.5px;
   font-weight: 700;
 }
-
+ 
 /* STAT CARD ICON STYLING */
 .stat-icon-wrapper {
   width: 40px;
   height: 40px;
   border-radius: 10px;
-  background-color: #E6F9FC;
+  background-color: #e6f9fc;
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #0096C7;
+  color: #0096c7;
   font-size: 18px;
 }
+ 
+/* RESPONSIVE DASHBOARD */
+ 
+/* Tablet */
+@media (max-width: 991.98px) {
+  .dashboard-view {
+    padding: 12px;
+    gap: 16px;
+  }
+ 
+  /* 2 stat cards per row */
+  .stats-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 14px;
+  }
+ 
+  /* Stack charts */
+  .charts-grid {
+    grid-template-columns:1fr;
+    gap: 12px;
+  }
+ 
+  /* Stack bottom panels */
+  .panels-grid {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+ 
+  .chart-wrapper {
+    height: 300px;
+  }
+ 
+  .doughnut-wrapper {
+    height: 220px;
+  }
+}
+ 
+/* Mobile */
+@media (max-width: 575.98px) {
+  .dashboard-view {
+    padding: 8px;
+    gap: 12px;
+  }
+ 
+  /* 1 stat card per row */
+  .stats-grid {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+ 
+  .charts-grid,
+  .panels-grid {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+ 
+  .card-box {
+    padding: 16px;
+    border-radius: 12px;
+  }
+ 
+  .card-heading {
+    font-size: 14px;
+  }
+ 
+  .card-subtext {
+    font-size: 11.5px;
+  }
+ 
+  .chart-wrapper {
+    height: 260px;
+  }
+ 
+  .doughnut-wrapper {
+    height: 200px;
+  }
+ 
+  .panel-header {
+    align-items: flex-start;
+    gap: 10px;
+  }
+ 
+  .live-badge {
+    font-size: 10px;
+    padding: 4px 8px;
+  }
+ 
+  .punch-item,
+  .dept-item {
+    gap: 8px;
+  }
+ 
+  .punch-info strong {
+    font-size: 12.5px;
+  }
+ 
+  .punch-info p,
+  .dept-item p {
+    font-size: 10.5px;
+  }
+}
+ 
+ 

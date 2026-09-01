@@ -6,7 +6,7 @@ import Badge from "../../../components/Badge/Badge";
 import StatCard from "../../../components/StatCard/StatCard";
 import DataTable from "../../../components/DataTable/DataTable";
 import TablePagination from "../../../components/TablePagination/TablePagination";
-import { useEmployees, useEmployeeAttendance } from "../api/employeeApi"; // Check path
+import { useEmployees, useEmployeeAttendance } from "../api/employeeApi";
 
 const PAGE_SIZE = 5;
 
@@ -17,10 +17,8 @@ const EmployeeDetails = () => {
 
   const [currentPage, setCurrentPage] = useState(1);
 
-  // 1. Fetch full employee profile list
+  // 1. Fetch data
   const { data: employeesData, isLoading: isEmployeeLoading } = useEmployees();
-
-  // 2. Fetch monthly attendance
   const { data: attendanceData, isLoading: isAttendanceLoading } = useEmployeeAttendance(id);
 
   const {
@@ -30,36 +28,52 @@ const EmployeeDetails = () => {
     attendanceList = [],
   } = attendanceData || {};
 
-  // 3. Robust Employee Data Fallback Chain
-  const employee = useMemo(() => {
-    // Route State First
-    if (location.state?.selectedEmployee) {
-      return location.state.selectedEmployee;
-    }
+ // Clean, minimal resolution logic
+const employee = useMemo(() => {
+  const cleanId = String(id).replace(/^EMP-/i, "").trim();
 
-    // Search inside employees API response (with Type Coercion)
-    const foundEmp = employeesData?.employees?.find(
-      (emp) => String(emp.id) === String(id) || String(emp.employeeId) === `EMP-${id}`
-    );
+  // 1. Search inside employees API response (already mapped by select)
+  const foundEmp = employeesData?.employees?.find(
+    (emp) =>
+      String(emp.id) === cleanId ||
+      String(emp.employeeId).toUpperCase() === String(id).toUpperCase()
+  );
 
-    if (foundEmp) return foundEmp;
+  if (foundEmp) return foundEmp;
 
-    // Direct Attendance API response fallback
-    if (attendanceEmpName || attendanceEmpId) {
-      return {
-        name: attendanceEmpName || "N/A",
-        employeeId: attendanceEmpId ? `EMP-${attendanceEmpId}` : `EMP-${id}`,
-        designation: "N/A",
-        departmentName: "Unassigned",
-        phone: "N/A",
-        status: "Active",
-        fingerprintRegistered: false,
-      };
-    }
+  // 2. Fallback to route state if user navigated directly with state
+  if (location.state?.selectedEmployee) {
+    return location.state.selectedEmployee;
+  }
 
-    return null;
-  }, [location.state, employeesData, id, attendanceEmpName, attendanceEmpId]);
+  // 3. Last fallback: basic object from Attendance API
+  if (attendanceEmpName || attendanceEmpId) {
+    return {
+      name: attendanceEmpName,
+      employeeId: attendanceEmpId ? `EMP-${attendanceEmpId}` : `EMP-${id}`,
+      designation: "N/A",
+      departmentName: "Unassigned",
+      phone: "N/A",
+      status: "Active",
+      fingerprintRegistered: false,
+    };
+  }
 
+  return null;
+}, [employeesData, id, location.state, attendanceEmpName, attendanceEmpId]);
+
+  // Extract variables with defaults for clean JSX
+  const {
+  name = "N/A",
+  employeeId: displayId = id ? `EMP-${id}` : "N/A",
+  designation = "N/A",
+  departmentName = "Unassigned",
+  phone = "N/A",
+  status = "Active",
+  fingerprintRegistered = false,
+} = employee || {};
+
+  // Table Columns
   const attendanceColumns = useMemo(
     () => [
       { key: "date", header: "DATE" },
@@ -83,6 +97,7 @@ const EmployeeDetails = () => {
     []
   );
 
+  // Pagination Logic
   const totalRecords = attendanceList.length;
   const totalPages = Math.ceil(totalRecords / PAGE_SIZE) || 1;
 
@@ -105,8 +120,7 @@ const EmployeeDetails = () => {
       {/* Top Header */}
       <div className="department-employees-header mb-4">
         <h1>
-          {employee?.name || attendanceEmpName || "Employee"} (
-          {employee?.employeeId || (id ? `EMP-${id}` : "")})
+          {name} ({displayId})
         </h1>
         <button
           type="button"
@@ -122,36 +136,30 @@ const EmployeeDetails = () => {
         {/* Left Section: Profile Card */}
         <div className="col-12 col-lg-4">
           <div className="card border-0 rounded-4 p-4 shadow-sm align-items-center text-center bg-white">
-            <Avatar name={employee?.name || attendanceEmpName || "User"} size="large" />
-            <h4 className="fw-bold mt-3 mb-1 text-dark">
-              {employee?.name || attendanceEmpName || "N/A"}
-            </h4>
-            <p className="text-muted small mb-3">{employee?.designation || "N/A"}</p>
-            <Badge variant="info">
-              {employee?.departmentName || employee?.department || "Unassigned"}
-            </Badge>
+            <Avatar name={name} size="large" />
+            <h4 className="fw-bold mt-3 mb-1 text-dark">{name}</h4>
+            <p className="text-muted small mb-3">{designation}</p>
+            <Badge variant="info">{departmentName}</Badge>
 
             <div className="w-100 border-top mt-4 pt-3 text-start">
               <div className="d-flex justify-content-between align-items-center mb-3">
                 <span className="text-muted small">Employee ID</span>
-                <span className="fw-bold text-dark">
-                  {employee?.employeeId || (id ? `EMP-${id}` : "N/A")}
-                </span>
+                <span className="fw-bold text-dark">{displayId}</span>
               </div>
               <div className="d-flex justify-content-between align-items-center mb-3">
                 <span className="text-muted small">Phone</span>
-                <span className="fw-bold text-dark">{employee?.phone || "N/A"}</span>
+                <span className="fw-bold text-dark">{phone}</span>
               </div>
               <div className="d-flex justify-content-between align-items-center mb-3">
                 <span className="text-muted small">Status</span>
-                <Badge variant={employee?.status === "Active" ? "success" : "danger"}>
-                  {employee?.status || "Active"}
+                <Badge variant={status === "Active" ? "success" : "danger"}>
+                  {status}
                 </Badge>
               </div>
               <div className="d-flex justify-content-between align-items-center">
                 <span className="text-muted small">Fingerprint</span>
-                <Badge variant={employee?.fingerprintRegistered ? "info" : "default"}>
-                  {employee?.fingerprintRegistered ? "Registered" : "Not Registered"}
+                <Badge variant={fingerprintRegistered ? "info" : "default"}>
+                  {fingerprintRegistered ? "Registered" : "Not Registered"}
                 </Badge>
               </div>
             </div>

@@ -27,7 +27,7 @@ import { useDepartments } from "../../departments/api/departmentApi";
 import "./EmployeeManagement.css";
 import ConfirmDialog from "../../../components/ConfirmDialog/ConfirmDialog";
 import toast from "react-hot-toast";
-// import LoadingSpinner from "../../../components/LoadingSpinner/LoadingSpinner";
+import LoadingSpinner from "../../../components/LoadingSpinner/LoadingSpinner";
 
 const PAGE_SIZE = 5;
 
@@ -50,12 +50,7 @@ const INITIAL_FILTERS = {
 const EmployeeManagement = () => {
   const navigate = useNavigate();
 
-  const {
-    data = { employees: [], counts: {} },
-    isLoading,
-    isError,
-    error,
-  } = useEmployees();
+  const {data = { employees: [], counts: {} }, isLoading, isError} = useEmployees();
   const { employees = [], counts = {} } = data;
   const { data: departments = [] } = useDepartments();
 
@@ -63,8 +58,7 @@ const EmployeeManagement = () => {
   const updateEmployeeMutation = useUpdateEmployee();
   const deleteEmployeeMutation = useDeleteEmployee();
 
-  const [selectedEmployeeForDelete, setSelectedEmployeeForDelete] =
-    useState(null);
+  const [selectedEmployeeForDelete, setSelectedEmployeeForDelete] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingEmployee, setEditingEmployee] = useState(null);
   const [employeeForm, setEmployeeForm] = useState(INITIAL_FORM_STATE);
@@ -372,8 +366,14 @@ const EmployeeManagement = () => {
   if (isError) {
     return (
       <div className="employee-management">
-        <div className="error-card">Failed to fetch data: {error?.message}</div>
+        <div className="error-card">Failed to fetch data</div>
       </div>
+    );
+  }
+
+  if (isLoading) {
+    return (
+      <LoadingSpinner message="Loading Employee data" fullPage/>
     );
   }
 

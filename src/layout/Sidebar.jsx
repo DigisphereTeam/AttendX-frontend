@@ -119,7 +119,7 @@ const Sidebar = ({ isOpen, onClose }) => {
         </nav>
 
         <div className="sidebar-footer">
-          <div>© 2026 Digisphere Tech</div>
+          <div style={{textAlign:"center"}}>© 2026 Digisphere</div>
           {/* <div>Attendance Suite v1.0</div> */}
         </div>
       </aside>

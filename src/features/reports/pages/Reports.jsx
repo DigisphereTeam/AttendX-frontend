@@ -12,6 +12,7 @@ import TableToolbar from "../../../components/TableToolbar/TableToolbar";
 import TablePagination from "../../../components/TablePagination/TablePagination";
  
 import "./Reports.css";
+import LoadingSpinner from "../../../components/LoadingSpinner/LoadingSpinner";
  
 const getCurrentMonth = () => {
   const now = new Date();
@@ -36,7 +37,7 @@ export default function Reports() {
   useEffect(() => {
     const timer = setTimeout(() => {
       setDebouncedSearch(searchQuery.trim());
-    }, 400);
+    }, 2000);
  
     return () => {
       clearTimeout(timer);
@@ -59,35 +60,18 @@ export default function Reports() {
     error,
   } = useReports(reportParams);
  
-  /*
-   * API response:
-   *
-   * {
-   *   statusCode: 200,
-   *   data: {
-   *     filters: {},
-   *     summary: {},
-   *     employees: []
-   *   }
-   * }
-   */
+
   const reportData = response?.data;
  
   const summary = reportData?.summary || {};
  
   const employees = reportData?.employees || [];
  
-  /*
-   * Reset pagination whenever search/month changes.
-   */
+ 
   useEffect(() => {
     setCurrentPage(1);
   }, [searchQuery, selectedMonth]);
  
-  /*
-   * API already returns the required summary values.
-   * No frontend calculation is required.
-   */
   const stats = {
     present: summary.present || 0,
     absent: summary.absent || 0,
@@ -95,9 +79,9 @@ export default function Reports() {
     hours: summary.totalWorkingHours || "0.0",
   };
  
-  /*
-   * Pagination
-   */
+
+  //  * Pagination *  //
+ 
   const totalRecords = employees.length;
  
   const totalPages = Math.ceil(totalRecords / pageSize) || 1;
@@ -108,9 +92,7 @@ export default function Reports() {
     return employees.slice(startIndex, startIndex + pageSize);
   }, [employees, currentPage]);
  
-  /*
-   * Table columns
-   */
+ 
   const columns = [
     {
       key: "employeeName",
@@ -150,13 +132,7 @@ export default function Reports() {
       render: (row) => <strong>{row.hours}</strong>,
     },
   ];
- 
-  /*
-   * Toolbar
-   *
-   * Search = col-4
-   * Month = col-4
-   */
+
   const toolbarFilters = [
     {
       type: "search",
@@ -177,9 +153,6 @@ export default function Reports() {
     month: selectedMonth,
   };
  
-  /*
-   * Toolbar change handler
-   */
   const handleToolbarChange = (name, value) => {
     if (name === "search") {
       setSearchQuery(value);
@@ -190,9 +163,6 @@ export default function Reports() {
     }
   };
  
-  /*
-   * Clear filters
-   */
   const handleClearFilters = () => {
     setSearchQuery("");
         setDebouncedSearch("");
@@ -200,21 +170,9 @@ export default function Reports() {
         setSelectedMonth(getCurrentMonth());
   };
  
-  /*
-   * Initial loading only.
-   *
-   * IMPORTANT:
-   * We do NOT replace the entire page with a loading screen
-   * when searching or changing month.
-   *
-   * This keeps the search input mounted, so cursor/focus
-   * does not jump after every API request.
-   */
   if (isLoading && !response) {
     return (
-      <div className="reports-container">
-        <div className="text-center py-5">Loading reports...</div>
-      </div>
+      <LoadingSpinner message="Loading Reports " fullPage/>
     );
   }
  

@@ -1,12 +1,28 @@
-import { useState, useMemo, useCallback } from "react";
+import { useState, useMemo, useCallback, useEffect } from "react";
 import Avatar from "../../../components/Avatar/Avatar";
 import Badge from "../../../components/Badge/Badge";
 import TableToolbar from "../../../components/TableToolbar/TableToolbar";
 import DataTable from "../../../components/DataTable/DataTable";
 import TablePagination from "../../../components/TablePagination/TablePagination";
 import { useAttendanceHistory } from "../api/biometricApi";
+import { useDepartments } from "../../departments/api/departmentApi"
 
-export default function AttendanceHistory({ departments = [] }) {
+function useDebounce(value, delay = 2000) {
+  const [debouncedValue, setDebouncedValue] = useState(value);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedValue(value);
+    }, delay);
+
+    return () => clearTimeout(timer);
+  }, [value, delay]);
+
+  return debouncedValue;
+}
+
+export default function AttendanceHistory({ departments: propDepartments = [] }) {
+  // 2. Separate UI state for input forms from query parameters
   const [filterValues, setFilterValues] = useState({
     search: "",
     dept: "",
@@ -18,8 +34,24 @@ export default function AttendanceHistory({ departments = [] }) {
   const [currentPage, setCurrentPage] = useState(1);
   const pageSize = 10;
 
-  // Fetch API history data (search will map directly to ?search= in backend)
-  const { data: historyList = [], isLoading } = useAttendanceHistory(filterValues);
+  // 3. Debounce only the search term
+  const debouncedSearch = useDebounce(filterValues.search, 2000);
+
+  // 4. Construct query filters using debounced search (dropdowns update instantly)
+  const queryFilters = useMemo(
+    () => ({
+      ...filterValues,
+      search: debouncedSearch,
+    }),
+    [filterValues, debouncedSearch]
+  );
+
+  // Fetch API history using debounced query filters
+  const { data: historyList = [], isLoading: isLoadingHistory } = useAttendanceHistory(queryFilters);
+
+  // Fetch departments dropdown data
+  const { data: fetchedDepartments = [], isLoading: isLoadingDepts } = useDepartments();
+  const departmentsList = propDepartments.length > 0 ? propDepartments : fetchedDepartments;
 
   const handleFilterChange = useCallback((name, value) => {
     setFilterValues((prev) => ({ ...prev, [name]: value }));
@@ -47,8 +79,8 @@ export default function AttendanceHistory({ departments = [] }) {
       {
         name: "dept",
         type: "select",
-        placeholder: "All Departments",
-        options: departments.map((d) => ({
+        placeholder: isLoadingDepts ? "Loading departments..." : "All Departments",
+        options: departmentsList.map((d) => ({
           label: d.name || d.department_name,
           value: d.name || d.department_name,
         })),
@@ -72,7 +104,7 @@ export default function AttendanceHistory({ departments = [] }) {
         type: "date",
       },
     ],
-    [departments]
+    [departmentsList, isLoadingDepts]
   );
 
   const totalRecords = historyList.length;
@@ -144,12 +176,12 @@ export default function AttendanceHistory({ departments = [] }) {
 
       <TableToolbar
         filters={filterConfig}
-        values={filterValues}
+        values={filterValues} 
         onChange={handleFilterChange}
         onClear={handleClearFilters}
       />
 
-      {isLoading ? (
+      {isLoadingHistory ? (
         <div className="text-center py-5 text-muted">
           <div className="spinner-border text-primary me-2" role="status" />
           Loading attendance history...

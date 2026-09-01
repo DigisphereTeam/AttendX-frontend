@@ -121,6 +121,25 @@
   opacity: 1;
 }
 
+.enrollment-success-message {
+  width: 100%;
+  min-height: 42px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 10px 14px;
+  border: 1px solid #12b76a;
+  border-radius: 8px;
+  background: #ecfdf3;
+  color: #027a48;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.enrollment-success-message i {
+  font-size: 16px;
+}
+
 @keyframes pulseRing {
   0% { box-shadow: 0 0 0 0 rgba(0, 180, 216, 0.35); }
   70% { box-shadow: 0 0 0 18px rgba(0, 180, 216, 0); }

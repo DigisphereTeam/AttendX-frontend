@@ -1,5 +1,7 @@
 import { useState } from "react";
  
+import { FaEye, FaEyeSlash } from "react-icons/fa";
+ 
 import { useNavigate } from "react-router-dom";
  
 import toast from "react-hot-toast";
@@ -73,8 +75,7 @@ export default function Login() {
             <div className="brand-mid">
               <h1>Office attendance, tracked the smart way.</h1>
               <p>
-                Punch in, view your history, and keep every check-in accurate —
-                all from one place built for Digisphere Tech.
+                Punch in, view your history, and keep every check-in accurate 
               </p>
  
               <div className="scan-motif">
@@ -139,14 +140,16 @@ export default function Login() {
                     onChange={(e) => setPassword(e.target.value)}
                     autoComplete="current-password"
                   />
-                  <i
-                    className={`bi toggle-eye ${
-                      showPassword ? "bi-eye-slash" : "bi-eye"
-                    }`}
+                  <button
+                    type="button"
+                    className="toggle-eye"
                     onClick={() => setShowPassword((s) => !s)}
-                    role="button"
-                    aria-label="Toggle password visibility"
-                  ></i>
+                    aria-label={
+                      showPassword ? "Hide password" : "Show password"
+                    }
+                  >
+                    {showPassword ? <FaEyeSlash /> : <FaEye />}
+                  </button>
                 </div>
  
                 <div className="remember-row">
@@ -183,3 +186,5 @@ export default function Login() {
     </div>
   );
 }
+ 
+ 
