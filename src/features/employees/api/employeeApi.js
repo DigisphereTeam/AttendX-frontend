@@ -1,12 +1,13 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import axiosInstance from "../../../lib/axios";
+import { formatToUTCDate, formatToUTCTime } from "../../../utils/dateUtils";
 
 const EMPLOYEE_ENDPOINTS = {
   GET_ALL: "/employee/getemployees",
   CREATE: "/employee/addemployeewithdevice",
   UPDATE: (id) => `/employee/edit-employee-with-device/${id}`,
   DELETE: (id) => `/employee/delete-employee-with-device/${id}`,
-  GET_BY_ID: (id) => `/attendence/monthlyattendance/${id}`
+  GET_BY_ID: (employeeId) => `/attendence/monthlyattendance/${employeeId}`
 };
 
 export const getEmployees = async () => {
@@ -121,49 +122,14 @@ export const useEmployeeAttendance = (employeeId) => {
       const summary = response?.summary || { present: 0, late: 0, absent: 0, total_marked_days: 0 };
       const rawList = response?.data || [];
 
-      const attendanceList = rawList.map((item, index) => {
-        const targetDateStr = item.punch_in || item.attendance_date;
-        const dateObj = targetDateStr ? new Date(targetDateStr) : null;
-
-        let formattedDate = "N/A";
-        if (dateObj && !isNaN(dateObj.getTime())) {
-          const year = dateObj.getFullYear();
-          const month = String(dateObj.getMonth() + 1).padStart(2, "0");
-          const day = String(dateObj.getDate()).padStart(2, "0");
-          console.log(`Record #${index + 1}:`, {
-            rawString: targetDateStr,
-            day: day,
-            month: month,
-            year: year,
-          });
-          formattedDate = `${year}-${month}-${day}`;
-        }
-
-        const formatTime = (timeStr) => {
-          if (!timeStr) return "--";
-          const d = new Date(timeStr);
-          return isNaN(d.getTime())
-            ? "--"
-            : d.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", hour12: true });
-        };
-
-        let hrs = "--";
-        if (item.punch_in && item.punch_out) {
-          const diffMs = new Date(item.punch_out) - new Date(item.punch_in);
-          if (diffMs > 0) {
-            hrs = (diffMs / (1000 * 60 * 60)).toFixed(1);
-          }
-        }
-
-        return {
-          id: index + 1,
-          date: formattedDate,
-          punchIn: formatTime(item.punch_in),
-          punchOut: formatTime(item.punch_out),
-          hrs,
-          status: item.status || (item.is_late ? "Late" : "Present"),
-        };
-      });
+      const attendanceList = rawList.map((item, index) => ({
+        id: index + 1,
+        date: formatToUTCDate(item.attendance_date || item.punch_in),
+        punchIn: formatToUTCTime(item.punch_in),   
+        punchOut: formatToUTCTime(item.punch_out), 
+        hrs: item.work_hours || "—",
+        status: item.status || (item.is_late ? "Late" : "Present"),
+      }));
 
       return {
         employeeName: response?.employee_name || "",
@@ -174,3 +140,4 @@ export const useEmployeeAttendance = (employeeId) => {
     },
   });
 };
+

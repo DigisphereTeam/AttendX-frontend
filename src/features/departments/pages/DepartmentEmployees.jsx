@@ -1,6 +1,5 @@
-import { useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { FiArrowLeft, FiUserCheck, FiUsers } from "react-icons/fi";
-
 import { useNavigate, useParams } from "react-router-dom";
 
 import Avatar from "../../../components/Avatar/Avatar";
@@ -14,26 +13,50 @@ import { FaFingerprint } from "react-icons/fa";
 import { useDepartments, useEmployeesByDepartment } from "../api/departmentApi";
 import LoadingSpinner from "../../../components/LoadingSpinner/LoadingSpinner";
 
+const PAGE_SIZE = 10;
+
 const DepartmentEmployees = () => {
   const navigate = useNavigate();
   const { departmentId } = useParams();
-  const {data: departments=[], isLoading: isDeptLoading} = useDepartments();
-  const {data: employees=[], isLoading: isEmpLoading, isError} = useEmployeesByDepartment(departmentId);
+  const { data: departments = [], isLoading: isDeptLoading } = useDepartments();
+  const {
+    data: employees = [],
+    isLoading: isEmpLoading,
+    isError,
+  } = useEmployeesByDepartment(departmentId);
+  const [page, setPage] = useState(1);
 
   const department = departments.find(
-    (item) => String(item.id) === String(departmentId)
-  )
+    (item) => String(item.id) === String(departmentId),
+  );
 
   const totalEmployees = employees.length;
   const activeEmployees = employees.filter(
-    (emp)=>emp.status === "Active"
+    (emp) => emp.status === "Active",
   ).length;
   const fingerprintRegistered = employees.filter(
-    (emp)=>emp.fingerprint === "Registered"
+    (emp) => emp.fingerprint === "Registered",
   ).length;
 
-  if(isDeptLoading || isEmpLoading){
-    return <LoadingSpinner message="Loading Department Details..." fullPage/>
+  const totalPages = Math.ceil(totalEmployees / PAGE_SIZE);
+  const paginatedEmployees = useMemo(() => {
+    const startIndex = (page - 1) * PAGE_SIZE;
+    const endIndex = startIndex + PAGE_SIZE;
+
+    return employees.slice(startIndex, endIndex);
+  }, [employees, page]);
+  useEffect(() => {
+    if (totalPages > 0 && page > totalPages) {
+      setPage(totalPages);
+    }
+
+    if (totalPages === 0 && page !== 1) {
+      setPage(1);
+    }
+  }, [page, totalPages]);
+
+  if (isDeptLoading || isEmpLoading) {
+    return <LoadingSpinner message="Loading Department Details..." fullPage />;
   }
 
   if (isError || !department) {
@@ -129,16 +152,19 @@ const DepartmentEmployees = () => {
       </div>
 
       <div className="department-employee-table-section">
-
-        <DataTable columns={columns} data={employees} />
+        <DataTable columns={columns} data={paginatedEmployees} />
 
         <TablePagination
-          page={1}
-          totalPages={1}
-          totalRecords={employees.length}
-          pageSize={10}
-          onPrevious={() => {}}
-          onNext={() => {}}
+          page={page}
+          totalPages={totalPages}
+          totalRecords={totalEmployees}
+          pageSize={PAGE_SIZE}
+          onPrevious={() => {
+            setPage((prev) => Math.max(prev - 1, 1));
+          }}
+          onNext={() => {
+            setPage((prev) => Math.min(prev + 1, totalPages));
+          }}
         />
       </div>
     </div>

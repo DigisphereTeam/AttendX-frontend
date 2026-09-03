@@ -1,5 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import axiosInstance from "../../../lib/axios";
+import { formatToUTCDate, formatToUTCTime } from "../../../utils/dateUtils";
 
 // Endpoint constants
 const BIOMETRIC_ENDPOINTS = {
@@ -63,40 +64,21 @@ export const useAttendanceHistory = (filters = {}) => {
       const rawList = response?.data || [];
 
       const formattedList = rawList.map((item, index) => {
-        // Fallback: punchIn or date property
-        const targetDateStr = item.punchIn || item.date;
-        const dateObj = targetDateStr ? new Date(targetDateStr) : null;
-
-        let formattedDate = "N/A";
-        if (dateObj && !isNaN(dateObj.getTime())) {
-          const year = dateObj.getFullYear();
-          const month = String(dateObj.getMonth() + 1).padStart(2, "0");
-          const day = String(dateObj.getDate()).padStart(2, "0");
-          formattedDate = `${year}-${month}-${day}`;
-        }
-
-        const formatTime = (timeStr) => {
-          if (!timeStr) return "—";
-          const d = new Date(timeStr);
-          return isNaN(d.getTime())
-            ? "—"
-            : d.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", hour12: true });
-        };
+        const targetDate = item.date || item.punchIn;
 
         return {
           id: `${item.employeeId}-${index}`,
-          date: formattedDate,
+          date: formatToUTCDate(targetDate),
           empId: item.employeeId,
           empName: item.employeeName || "N/A",
           dept: item.department || "Unassigned",
-          punchIn: formatTime(item.punchIn),
-          punchOut: formatTime(item.punchOut),
+          punchIn: formatToUTCTime(item.punchIn),   // Outputs clean UTC time: "02:50 PM"
+          punchOut: formatToUTCTime(item.punchOut), // Outputs clean UTC time or "--"
           workingHours: item.workingHours || "—",
           status: item.status || "Present",
         };
       });
 
-      // Client-side fallback filter if the backend doesn't filter departments natively
       if (filters.dept) {
         return formattedList.filter(
           (item) => item.dept.toLowerCase() === filters.dept.toLowerCase()

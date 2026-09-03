@@ -7,7 +7,7 @@ import TablePagination from "../../../components/TablePagination/TablePagination
 import { useAttendanceHistory } from "../api/biometricApi";
 import { useDepartments } from "../../departments/api/departmentApi"
 
-function useDebounce(value, delay = 2000) {
+function useDebounce(value, delay = 500) {
   const [debouncedValue, setDebouncedValue] = useState(value);
 
   useEffect(() => {
@@ -35,7 +35,7 @@ export default function AttendanceHistory({ departments: propDepartments = [] })
   const pageSize = 10;
 
   // 3. Debounce only the search term
-  const debouncedSearch = useDebounce(filterValues.search, 2000);
+  const debouncedSearch = useDebounce(filterValues.search, 500);
 
   // 4. Construct query filters using debounced search (dropdowns update instantly)
   const queryFilters = useMemo(
@@ -46,10 +46,8 @@ export default function AttendanceHistory({ departments: propDepartments = [] })
     [filterValues, debouncedSearch]
   );
 
-  // Fetch API history using debounced query filters
   const { data: historyList = [], isLoading: isLoadingHistory } = useAttendanceHistory(queryFilters);
 
-  // Fetch departments dropdown data
   const { data: fetchedDepartments = [], isLoading: isLoadingDepts } = useDepartments();
   const departmentsList = propDepartments.length > 0 ? propDepartments : fetchedDepartments;
 

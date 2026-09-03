@@ -30,7 +30,7 @@ import toast from "react-hot-toast";
 import LoadingSpinner from "../../../components/LoadingSpinner/LoadingSpinner";
 import { employeeSchema } from "./employeeSchema";
 
-const PAGE_SIZE = 5;
+const PAGE_SIZE = 10;
 
 const INITIAL_FORM_STATE = {
   employeeId: "",
