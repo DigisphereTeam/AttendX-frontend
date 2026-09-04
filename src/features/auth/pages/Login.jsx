@@ -1,13 +1,10 @@
-import { useState } from "react";
- 
+import { useState } from "react"; 
 import { FaEye, FaEyeSlash } from "react-icons/fa";
- 
 import { useNavigate } from "react-router-dom";
- 
 import toast from "react-hot-toast";
- 
 import { login } from "../api/authApi";
 import { saveToken } from "../utils/authStorage";
+import logo from "../../../assets/digiLog-logo.png"
  
 import "./Login.css";
  
@@ -65,9 +62,8 @@ export default function Login() {
           {/* LEFT: brand panel */}
           <div className="col-lg-6 d-none d-lg-flex brand-panel">
             <div className="brand-mark">
-              <div className="logo-mark">D</div>
+              <img src={logo} alt="digiLog Logo" className="brand-logo" />
               <div className="txt">
-                <strong>DigiLog</strong>
                 <span>Attendance System</span>
               </div>
             </div>

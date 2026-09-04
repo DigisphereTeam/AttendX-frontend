@@ -7,6 +7,7 @@ import {
   FiX,
 } from "react-icons/fi";
 import { FaClipboardCheck, FaFingerprint } from "react-icons/fa";
+import logo from "../assets/logo-digi.png"
 
 
 const navigation = [
@@ -73,11 +74,7 @@ const Sidebar = ({ isOpen, onClose }) => {
       <aside className={`app-sidebar ${isOpen ? "show" : ""}`}>
         <div className="sidebar-header">
           <div className="brand">
-            <div className="brand-logo">D</div>
-            <div className="brand-text">
-              <strong>DigiLog</strong>
-              <span>By Digisphere</span>
-            </div>
+            <img src={logo} alt="Digilog-logo" className="brand-logo "/>
           </div>
 
           <button
