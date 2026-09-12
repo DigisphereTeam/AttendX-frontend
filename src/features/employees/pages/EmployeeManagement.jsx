@@ -29,6 +29,7 @@ import ConfirmDialog from "../../../components/ConfirmDialog/ConfirmDialog";
 import toast from "react-hot-toast";
 import LoadingSpinner from "../../../components/LoadingSpinner/LoadingSpinner";
 import { employeeSchema } from "./employeeSchema";
+import Button from "../../../components/Button/Button";
 
 const PAGE_SIZE = 10;
 
@@ -394,13 +395,12 @@ const EmployeeManagement = () => {
           <h1>Employee Management</h1>
           <p>Manage your organization's employee records.</p>
         </div>
-        <button
-          type="button"
-          className="department-add-button"
+        <Button
+          icon={FiPlus}
           onClick={handleOpenAddEmployee}
         >
-          <FiPlus /> Add Employee
-        </button>
+         Add Employee
+        </Button>
       </div>
 
       <div className="row g-3 employee-statistics">

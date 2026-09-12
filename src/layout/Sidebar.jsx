@@ -1,70 +1,58 @@
 import { NavLink } from "react-router-dom";
-import {
-  FiBarChart2,
-  FiGrid,
-  FiLayers,
-  FiUsers,
-  FiX,
-} from "react-icons/fi";
-import { FaClipboardCheck, FaFingerprint } from "react-icons/fa";
-import logo from "../assets/logo-digi.png"
-
+import { FiBarChart2, FiCalendar, FiDollarSign, FiGrid, FiLayers, FiRepeat, FiUsers, FiX } from "react-icons/fi";
+import { FaCalendarTimes, FaClipboardCheck } from "react-icons/fa";
+import logo from "../assets/logo-digi.png";
 
 const navigation = [
   {
-    label: "Overview",
-    items: [
-      {
-        label: "Dashboard",
-        path: "/dashboard",
-        icon: FiGrid,
-      },
-    ],
+    label: "Dashboard",
+    path: "/dashboard",
+    icon: FiGrid,
   },
   {
-    label: "Workforce",
-    items: [
-      {
-        label: "Employee Management",
-        path: "/employees",
-        icon: FiUsers,
-      },
-      {
-        label: "Department Management",
-        path: "/departments",
-        icon: FiLayers,
-      },
-    ],
+    label: "Employee Management",
+    path: "/employees",
+    icon: FiUsers,
   },
   {
-    label: "Biometric & Attendance",
-    items: [
-      {
-        label: "Biometric Enrollment",
-        path: "/biometrics",
-        icon: FaFingerprint,
-      },
-      // {
-      //   label: "Attendance",
-      //   path: "/attendance",
-      //   icon: FiClock,
-      // },
-      {
-        label: "Attendance History",
-        path: "/attendance/history",
-        icon: FaClipboardCheck,
-      },
-    ],
+    label: "Department Management",
+    path: "/departments",
+    icon: FiLayers,
   },
   {
-    label: "Insights",
-    items: [
-      {
-        label: "Reports",
-        path: "/reports",
-        icon: FiBarChart2,
-      },
-    ],
+    label: "Attendance History",
+    path: "/attendance-history",
+    icon: FaClipboardCheck,
+  },
+   {
+    label: "Leave Management",
+    path: "/leave-management",
+    icon: FaCalendarTimes,
+  },
+  {
+    label: "My Leaves",
+    path: "/leaves",
+    icon: FaCalendarTimes,
+  },
+   {
+    label: "Shift Management",
+    path: "/shifts",
+    icon: FiRepeat,
+  },
+   {
+    label: "Expenditure",
+    path: "/expenditure",
+    icon: FiDollarSign,
+  },
+  {
+    label: "Calender",
+    path: "/calendar",
+    icon: FiCalendar,
+  },
+  {
+    label: "Reports",
+    path: "/reports",
+    icon: FiBarChart2,
   },
 ];
 
@@ -74,7 +62,7 @@ const Sidebar = ({ isOpen, onClose }) => {
       <aside className={`app-sidebar ${isOpen ? "show" : ""}`}>
         <div className="sidebar-header">
           <div className="brand">
-            <img src={logo} alt="Digilog-logo" className="brand-logo "/>
+            <img src={logo} alt="Digilog-logo" className="brand-logo " />
           </div>
 
           <button
@@ -88,35 +76,28 @@ const Sidebar = ({ isOpen, onClose }) => {
         </div>
 
         <nav className="sidebar-nav">
-          {navigation.map((section) => (
-            <div className="nav-section" key={section.label}>
-              <div className="nav-section-label">{section.label}</div>
+          {navigation.map((item) => {
+            const Icon = item.icon;
 
-              {section.items.map((item) => {
-                const Icon = item.icon;
-
-                return (
-                  <NavLink
-                    key={item.path}
-                    to={item.path}
-                    end
-                    onClick={onClose}
-                    className={({ isActive }) =>
-                      `sidebar-link ${isActive ? "active" : ""}`
-                    }
-                  >
-                    <Icon className="sidebar-link-icon" />
-                    <span>{item.label}</span>
-                  </NavLink>
-                );
-              })}
-            </div>
-          ))}
+            return (
+              <NavLink
+                key={item.path}
+                to={item.path}
+                end
+                onClick={onClose}
+                className={({ isActive }) =>
+                  `sidebar-link ${isActive ? "active" : ""}`
+                }
+              >
+                <Icon className="sidebar-link-icon" />
+                <span>{item.label}</span>
+              </NavLink>
+            );
+          })}
         </nav>
 
         <div className="sidebar-footer">
-          <div style={{textAlign:"center"}}>© 2026 Digisphere</div>
-          {/* <div>Attendance Suite v1.0</div> */}
+          <div style={{ textAlign: "center" }}>© 2026 Digisphere</div>
         </div>
       </aside>
 

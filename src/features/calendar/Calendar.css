@@ -1,0 +1,294 @@
+/* === Legend === */
+.calendar-legend-card {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  background-color: #ffffff;
+  border: 1px solid #e5eaf0;
+  border-radius: 12px;
+  padding: 14px 20px;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  font-weight: 500;
+  color: #344054;
+}
+
+.legend-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  display: inline-block;
+}
+
+.legend-dot-holiday {
+  background-color: #12b76a;
+}
+
+.legend-dot-event {
+  background-color: #175cd3;
+}
+
+.legend-dot-birthday {
+  background-color: #d6409f;
+}
+
+/* === Calendar Card === */
+.calendar-card {
+  background-color: #ffffff;
+  border: 1px solid #e5eaf0;
+  border-radius: 12px;
+  padding: 20px;
+}
+
+/* === Month Navigation === */
+.calendar-nav {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  margin-bottom: 20px;
+  position: relative;
+}
+
+.calendar-title {
+  font-weight: 700;
+  font-size: 16px;
+  color: #0f172a;
+}
+
+.calendar-nav-btn {
+  background: none;
+  border: 1px solid #e5eaf0;
+  border-radius: 6px;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: #475569;
+  position: absolute;
+  transition: all 0.2s ease;
+}
+
+.calendar-nav-btn:first-child {
+  left: 0;
+}
+
+.calendar-nav-btn:last-child {
+  right: 0;
+}
+
+.calendar-nav-btn:hover {
+  background-color: #f8fafc;
+  color: #0f172a;
+}
+
+/* === Weekday Row === */
+.calendar-weekday-row {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  margin-bottom: 8px;
+}
+
+.calendar-weekday {
+  text-align: left;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  color: #94a3b8;
+  padding: 4px 8px;
+}
+
+/* === Day Grid === */
+.calendar-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 6px;
+}
+
+.calendar-cell {
+  min-height: 100px;
+  max-height: 140px;
+  overflow-y: auto;
+  background-color: #f8fafc;
+  border: 1px solid #eef2f6;
+  border-radius: 8px;
+  padding: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  cursor: pointer;
+  transition: border-color 0.15s ease, background-color 0.15s ease;
+}
+
+.calendar-cell:hover {
+  border-color: #cbd5e1;
+  background-color: #f1f5f9;
+}
+
+.calendar-cell-inactive {
+  background-color: #fbfcfd;
+  opacity: 0.5;
+}
+
+.calendar-cell-today {
+  background-color: #f0f9ff;
+  border-color: #bae6fd;
+}
+
+.calendar-day-number {
+  font-size: 13px;
+  font-weight: 600;
+  color: #1e293b;
+  width: 22px;
+  height: 22px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.today-badge {
+  background-color: #0284c7;
+  color: #ffffff;
+}
+
+/* === Event Container & Pills === */
+.calendar-events-container {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  width: 100%;
+}
+
+.event-pill {
+  font-size: 11px;
+  font-weight: 600;
+  border-radius: 4px;
+  padding: 2px 6px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: block;
+}
+
+.event-pill-title {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.event-pill-holiday {
+  background-color: #ecfdf3;
+  color: #027a48;
+}
+
+.event-pill-event {
+  background-color: #eff8ff;
+  color: #175cd3;
+}
+
+.event-pill-birthday {
+  background-color: #fdf2fa;
+  color: #c11574;
+}
+
+/* === Modal Details Styling === */
+.empty-events-state {
+  text-align: center;
+  padding: 30px 10px;
+  color: #94a3b8;
+}
+
+.empty-icon {
+  font-size: 32px;
+  margin-bottom: 8px;
+}
+
+.events-modal-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  max-height: 280px;
+  overflow-y: auto;
+}
+
+.event-card-item {
+  border: 1px solid #e2e8f0;
+  border-left-width: 4px;
+  border-radius: 6px;
+  padding: 10px 12px;
+  background-color: #f8fafc;
+}
+
+.event-border-holiday {
+  border-left-color: #12b76a;
+}
+
+.event-border-event {
+  border-left-color: #175cd3;
+}
+
+.event-border-birthday {
+  border-left-color: #d6409f;
+}
+
+/* === Responsive Rules === */
+@media (max-width: 768px) {
+  .calendar-card {
+    padding: 12px;
+  }
+
+  .calendar-weekday {
+    padding: 4px 2px;
+    font-size: 10px;
+    text-align: center;
+  }
+
+  .calendar-cell {
+    min-height: 70px;
+    padding: 4px;
+  }
+
+  .event-pill-title {
+    display: none;
+  }
+
+  .event-pill {
+    padding: 3px;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    margin: 2px auto;
+  }
+
+  .calendar-events-container {
+    flex-direction: row;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 3px;
+  }
+}
+
+@media (max-width: 480px) {
+  .calendar-legend-card {
+    gap: 12px;
+    padding: 10px;
+  }
+
+  .calendar-cell {
+    min-height: 50px;
+  }
+
+  .calendar-day-number {
+    font-size: 11px;
+  }
+}

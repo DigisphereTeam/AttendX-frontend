@@ -10,6 +10,10 @@ import Dashboard from "../features/dashboard/pages/Dashboard";
 import Reports from "../features/reports/pages/Reports";
 import Login from "../features/auth/pages/Login";
 import ProtectedRoute from "./ProtectedRoute";
+import LeaveManagement from "../features/leaves/pages/LeaveManagement";
+import EmployeeLeaves from "../features/leaves/pages/EmployeeLeaves";
+import Calendar from "../features/calendar/Calendar";
+import Expenditure from "../features/expenditure/pages/Expenditure";
 
 const App = () => {
   return (
@@ -30,7 +34,13 @@ const App = () => {
 
         <Route path="/biometrics" element={<BiometricEnrollment/>} />
 
-        <Route path="/attendance/history" element={<AttendanceHistory />} />
+        <Route path="/attendance-history" element={<AttendanceHistory />} />
+
+        <Route path="/leave-management" element={<LeaveManagement/>} />
+        <Route path="/leaves" element={<EmployeeLeaves/>} />
+        <Route path="/calendar" element={<Calendar/>} />
+        <Route path="/shifts" element={<h2>Shift Management</h2>} />
+        <Route path="/expenditure" element={<Expenditure/>} />
 
         <Route path="/reports" element={<Reports/>} />
       </Route>

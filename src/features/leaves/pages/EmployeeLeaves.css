@@ -1,0 +1,122 @@
+/* ==========================================================================
+   Stats Grid
+   ========================================================================== */
+.leaves-stats-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+  margin-bottom: 12px;
+}
+
+@media (max-width: 992px) {
+  .leaves-stats-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 576px) {
+  .leaves-stats-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ==========================================================================
+   Table Card & Cell Styling
+   ========================================================================== */
+.leaves-table-card {
+  background-color: #ffffff;
+  border: 1px solid #e5eaf0;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.02);
+}
+
+.leave-type-cell {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.leave-icon-badge {
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  background-color: #e0f2fe;
+  color: #0284c7;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  flex-shrink: 0;
+}
+
+.leave-title {
+  font-weight: 600;
+  color: #0f172a;
+}
+
+.leave-subtext {
+  font-size: 12px;
+  color: #64748b;
+}
+
+.text-bold {
+  font-weight: 600;
+  color: #1e293b;
+}
+
+.text-muted {
+  color: #64748b;
+}
+
+.status-dot {
+  font-size: 8px;
+  margin-right: 4px;
+}
+
+.action-view-btn {
+  background: none;
+  border: none;
+  color: #64748b;
+  font-size: 18px;
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: color 0.2s ease;
+}
+
+.action-view-btn:hover {
+  color: #0f172a;
+}
+
+/* ==========================================================================
+   Embedded Leave Modal & Form Helper Styling
+   ========================================================================== */
+.custom-modal-backdrop {
+  background-color: rgba(15, 23, 42, 0.4);
+  backdrop-filter: blur(2px);
+}
+
+.fs-xs {
+  font-size: 11px;
+}
+
+.date-icon {
+  position: absolute;
+  left: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #64748b;
+  pointer-events: none;
+  z-index: 5;
+}
+
+.form-control:focus,
+.form-select:focus,
+.form-check-input:focus {
+  border-color: #0284c7;
+  box-shadow: 0 0 0 0.25rem rgba(2, 132, 199, 0.15);
+}

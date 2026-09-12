@@ -1,0 +1,56 @@
+
+.app-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  height: 44px;
+  padding: 0 20px;
+  border-radius: 10px;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease-in-out;
+  box-sizing: border-box;
+  white-space: nowrap;
+}
+
+.btn-primary {
+  background-color: #0464a4;
+  border: none;
+  color: #ffffff;
+}
+
+.btn-primary:hover:not(:disabled) {
+  background-color: #057dcd;
+}
+
+.btn-secondary {
+  background-color: #ffffff;
+  border: 1px solid #d0d5dd;
+  color: #344054;
+}
+
+.btn-secondary:hover:not(:disabled) {
+  background-color: #f9fafb;
+}
+
+.btn-icon {
+  font-size: 18px;
+  display: inline-block;
+}
+
+.app-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+
+@media (max-width: 480px) {
+  .app-btn {
+    height: 40px;
+    padding: 0 14px;
+    font-size: 14px;
+    width: 100%;
+  }
+}

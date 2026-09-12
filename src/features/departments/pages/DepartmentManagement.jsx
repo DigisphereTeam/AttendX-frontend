@@ -14,6 +14,7 @@ import {
 import "./DepartmentManagement.css";
 import LoadingSpinner from "../../../components/LoadingSpinner/LoadingSpinner";
 import ConfirmDialog from "../../../components/ConfirmDialog/ConfirmDialog";
+import Button from "../../../components/Button/Button";
 
 const DepartmentManagement = () => {
   const { data: departments = [], isLoading, isError } = useDepartments();
@@ -132,14 +133,12 @@ const DepartmentManagement = () => {
           <p>Manage departments and view department-wise employees</p>
         </div>
 
-        <button
-          type="button"
-          className="department-add-button"
+        <Button
+          icon={FiPlus}
           onClick={handleOpenAdd}
         >
-          <FiPlus />
           Add Department
-        </button>
+        </Button>
       </div>
 
       <div className="department-grid">

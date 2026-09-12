@@ -132,35 +132,3 @@
   border-top: 1px solid #eaecf0;
   flex-shrink: 0;
 }
-
-.btn-secondary {
-  height: 44px;
-  padding: 0 20px;
-  background-color: #ffffff;
-  border: 1px solid #d0d5dd;
-  border-radius: 10px;
-  color: #344054;
-  font-size: 15px;
-  font-weight: 600;
-  cursor: pointer;
-}
-
-.btn-secondary:hover {
-  background-color: #f9fafb;
-}
-
-.btn-primary {
-  height: 44px;
-  padding: 0 20px;
-  background-color: #0464A4;
-  border: none;
-  border-radius: 10px;
-  color: #ffffff;
-  font-size: 15px;
-  font-weight: 600;
-  cursor: pointer;
-}
-
-.btn-primary:hover {
-  background-color: #057DCD;
-}

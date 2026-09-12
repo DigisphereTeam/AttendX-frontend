@@ -41,14 +41,6 @@ ChartJS.register(
 // 4th Fix: Exact icon mapping matching image_8c05be
 const statIcons = [FaUsers, FaUserCheck, FaUserTimes, FaUserClock];
  
-// const departmentColors = [
-//   "#4F46E5",
-//   "#06B6D4",
-//   "#10B981",
-//   "#F59E0B",
-//   "#EF4444",
-// ];
- 
 const departmentColors = [
   "#0F3460",
   "#00B4D8",

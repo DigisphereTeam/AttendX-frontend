@@ -1,4 +1,5 @@
 import { FiX, FiChevronDown } from "react-icons/fi";
+import Button from "../../../components/Button/Button";
 
 const EmployeeModal = ({
   isOpen,
@@ -28,7 +29,6 @@ const EmployeeModal = ({
   return (
     <div className="modal-overlay" onClick={onClose}>
       <div className="modal-container" onClick={(e) => e.stopPropagation()}>
-        {/* Header */}
         <div className="modal-header">
           <h2>{isEditing ? "Edit Employee" : "Add Employee"}</h2>
           <button
@@ -42,10 +42,8 @@ const EmployeeModal = ({
           </button>
         </div>
 
-        {/* Form Body */}
         <form className="modal-body" onSubmit={handleSubmit}>
           <div className="modal-content-scroll">
-            {/* Full Name */}
             <div className="form-group">
               <label htmlFor="name">Full Name</label>
               <input
@@ -60,7 +58,6 @@ const EmployeeModal = ({
               />
             </div>
 
-            {/* Department Dropdown */}
             <div className="form-group">
               <label htmlFor="department">Department</label>
               <div className="select-wrapper">
@@ -88,7 +85,6 @@ const EmployeeModal = ({
               </div>
             </div>
 
-            {/* Designation */}
             <div className="form-group">
               <label htmlFor="designation">Designation</label>
               <input
@@ -103,7 +99,6 @@ const EmployeeModal = ({
               />
             </div>
 
-            {/* Phone */}
             <div className="form-group">
               <label htmlFor="phone">Phone</label>
               <input
@@ -119,7 +114,6 @@ const EmployeeModal = ({
               />
             </div>
 
-            {/* Status Dropdown */}
             <div className="form-group">
               <label htmlFor="status">Status</label>
               <div className="select-wrapper">
@@ -139,28 +133,22 @@ const EmployeeModal = ({
             </div>
           </div>
 
-          {/* Footer Actions */}
           <div className="modal-footer">
-            <button
-              type="button"
-              className="btn-secondary"
+            <Button
+              variant="secondary"
               onClick={onClose}
               disabled={isSubmitting}
             >
               Cancel
-            </button>
+            </Button>
 
-            <button
-              type="submit"
-              className="btn-primary"
-              disabled={isSubmitting}
-            >
+            <Button type="submit" variant="primary" disabled={isSubmitting}>
               {isSubmitting
                 ? "Saving..."
                 : isEditing
                   ? "Save Changes"
                   : "Save Employee"}
-            </button>
+            </Button>
           </div>
         </form>
       </div>

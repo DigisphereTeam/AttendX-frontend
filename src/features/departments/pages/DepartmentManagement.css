@@ -24,7 +24,7 @@
   font-size: 15px;
 }
 
-.department-add-button {
+/* .department-add-button {
   display: inline-flex;
   align-items: center;
   gap: 8px;
@@ -41,7 +41,7 @@
 
 .department-add-button:hover {
   background-color: #057DCD;
-}
+} */
 
 .department-grid {
   display: grid;

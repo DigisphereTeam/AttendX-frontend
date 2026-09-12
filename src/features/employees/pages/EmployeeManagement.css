@@ -16,9 +16,6 @@
   margin-bottom: 24px;
 }
 
-/* =========================================
-   Main Content Card
-========================================= */
 
 .employee-content-card {
   width: 100%;
@@ -27,12 +24,8 @@
   border: 1px solid #e6ebf1;
   border-radius: 16px;
   box-sizing: border-box;
-  overflow: hidden; /* Clips children so sticky or background headers fit container radii */
+  overflow: hidden; 
 }
-
-/* =========================================
-   Employee Name Cell Fixes
-========================================= */
 
 .employee-table-name {
   display: flex;
@@ -43,7 +36,7 @@
 
 .employee-table-name img,
 .employee-table-name .avatar {
-  flex-shrink: 0; /* Prevents avatar squishing on smaller layouts */
+  flex-shrink: 0; 
 }
 
 .employee-name {
@@ -54,10 +47,6 @@
   overflow: hidden;
   text-overflow: ellipsis;
 }
-
-/* =========================================
-   Actions Column Fixes
-========================================= */
 
 .employee-table-actions {
   display: flex;
@@ -99,10 +88,6 @@
   color: #dc2626;
 }
 
-/* =========================================
-   Responsive Adjustments
-========================================= */
-
 @media (max-width: 992px) {
   .employee-management {
     padding: 20px;
@@ -143,7 +128,7 @@
   }
 
   .employee-content-card {
-    padding: 8px; /* Maximizes scrollable space for table view on mobile viewports */
+    padding: 8px; 
     border-radius: 12px;
   }
 }

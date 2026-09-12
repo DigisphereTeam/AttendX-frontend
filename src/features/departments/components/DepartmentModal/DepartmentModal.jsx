@@ -1,6 +1,6 @@
 import { FiX } from "react-icons/fi";
-
 import "./DepartmentModal.css";
+import Button from "../../../../components/Button/Button";
 
 const DepartmentModal = ({
   isOpen,
@@ -90,22 +90,19 @@ const DepartmentModal = ({
           </div>
 
           <div className="modal-footer">
-            <button
-              type="button"
-              className="btn-secondary"
+            <Button
+              variant="secondary"
               onClick={onClose}
             >
               Cancel
-            </button>
+            </Button>
 
-            <button
+            <Button
               type="submit"
-              className="btn-primary"
+              variant="primary"
             >
-              {isEditing
-                ? "Save Changes"
-                : "Save Department"}
-            </button>
+              {isEditing ? "Save Changes" : "Save Department"}
+            </Button>
           </div>
         </form>
       </div>

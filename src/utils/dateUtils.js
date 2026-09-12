@@ -27,8 +27,4 @@ export const formatToUTCTime = (timeStr) => {
   return `${formattedHours}:${minutes} ${ampm}`;
 };
 
-// export const calculateHoursWorked = (startStr, endStr) => {
-//   if (!startStr || !endStr) return "--";
-//   const diffMs = new Date(endStr) - new Date(startStr);
-//   return diffMs > 0 ? (diffMs / (1000 * 60 * 60)).toFixed(1) : "--";
-// };
+
