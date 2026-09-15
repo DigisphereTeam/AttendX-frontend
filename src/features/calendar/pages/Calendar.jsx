@@ -12,19 +12,13 @@ import {
   formatMonthYear,
   getWeekdayLabels,
   formatDateKey,
-} from "../../utils/calendar";
-import Button from "../../components/Button/Button";
-import CommonModal from "../../components/CommonModal/CommonModal";
+} from "../../../utils/calendar";
+import Button from "../../../components/Button/Button";
+import CommonModal from "../../../components/CommonModal/CommonModal";
+import ConfirmDialog from "../../../components/ConfirmDialog/ConfirmDialog";
+import { useEvents, useAddEvent, useDeleteEvent } from "../api/calendarApi";
 
 import "./Calendar.css";
-
-const MOCK_EVENTS = {
-  "2026-09-02": [{ id: "1", type: "holiday", title: "Gandhi Jayanti", time: "All Day", notes: "National Holiday" }],
-  "2026-09-05": [{ id: "2", type: "birthday", title: "Vikram's Birthday", time: "All Day", notes: "Team Celebration" }],
-  "2026-09-10": [{ id: "3", type: "event", title: "Town Hall · 3 PM", time: "15:00", notes: "Q3 All-hands meeting" }],
-  "2026-09-14": [{ id: "4", type: "birthday", title: "Priya's Birthday", time: "All Day", notes: "Team Lunch" }],
-  "2026-09-21": [{ id: "5", type: "event", title: "Sprint Review", time: "11:00", notes: "Sprint 42 demo" }],
-};
 
 const LEGEND_ITEMS = [
   { type: "holiday", label: "Holiday" },
@@ -43,17 +37,36 @@ const getCurrentTimeString = () => {
 
 const Calendar = () => {
   const [viewedDate, setViewedDate] = useState(new Date(2026, 8, 1));
-  const [events, setEvents] = useState(MOCK_EVENTS);
+  const { data: fetchedEvents = [], isLoading } = useEvents();
+
+  // React Query Mutations
+  const { mutate: addEvent, isPending: isAdding } = useAddEvent();
+  const { mutate: deleteEvent, isPending: isDeleting } = useDeleteEvent();
+
+  // Group fetched events by date key
+  const eventsByDate = useMemo(() => {
+    return fetchedEvents.reduce((acc, event) => {
+      if (!event.date) return acc;
+      if (!acc[event.date]) {
+        acc[event.date] = [];
+      }
+      acc[event.date].push(event);
+      return acc;
+    }, {});
+  }, [fetchedEvents]);
 
   // Modal States
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isAddingEvent, setIsAddingEvent] = useState(false);
   const [selectedCell, setSelectedCell] = useState(null);
 
+  // Confirm Delete State
+  const [deleteTarget, setDeleteTarget] = useState(null);
+
   // Form State
   const [newEvent, setNewEvent] = useState({
     title: "",
-    type: "event",
+    type: "Event",
     time: "",
     notes: "",
   });
@@ -84,7 +97,7 @@ const Calendar = () => {
     });
     setNewEvent({
       title: "",
-      type: "event",
+      type: "Event",
       time: getCurrentTimeString(),
       notes: "",
     });
@@ -97,7 +110,7 @@ const Calendar = () => {
     setIsAddingEvent(false);
     setNewEvent({
       title: "",
-      type: "event",
+      type: "Event",
       time: getCurrentTimeString(),
       notes: "",
     });
@@ -108,7 +121,7 @@ const Calendar = () => {
     setIsModalOpen(false);
     setSelectedCell(null);
     setIsAddingEvent(false);
-    setNewEvent({ title: "", type: "event", time: "", notes: "" });
+    setNewEvent({ title: "", type: "Event", time: "", notes: "" });
   };
 
   const handleFormChange = (e) => {
@@ -120,42 +133,44 @@ const Calendar = () => {
     e.preventDefault();
     if (!selectedCell || !newEvent.title.trim()) return;
 
-    const targetKey = selectedCell.dateKey;
-    const createdEvent = {
-      id: Date.now().toString(),
-      title: newEvent.title.trim(),
-      type: newEvent.type,
-      time: newEvent.time || "All Day",
-      notes: newEvent.notes.trim(),
+    const formattedType =
+      newEvent.type.charAt(0).toUpperCase() + newEvent.type.slice(1);
+
+    const payload = {
+      event_title: newEvent.title.trim(),
+      event_type: formattedType,
+      event_date: selectedCell.dateKey,
+      description: newEvent.notes.trim(),
+      event_time: newEvent.time ? `${newEvent.time}:00` : "00:00:00",
     };
 
-    setEvents((prev) => ({
-      ...prev,
-      [targetKey]: [...(prev[targetKey] || []), createdEvent],
-    }));
-
-    setIsAddingEvent(false);
-  };
-
-  const handleDeleteEvent = (eventId) => {
-    if (!selectedCell) return;
-    const targetKey = selectedCell.dateKey;
-
-    setEvents((prev) => {
-      const updatedDayEvents = (prev[targetKey] || []).filter((e) => e.id !== eventId);
-      if (updatedDayEvents.length === 0) {
-        const newEventsState = { ...prev };
-        delete newEventsState[targetKey];
-        return newEventsState;
-      }
-      return {
-        ...prev,
-        [targetKey]: updatedDayEvents,
-      };
+    addEvent(payload, {
+      onSuccess: () => {
+        setIsAddingEvent(false);
+      },
     });
   };
 
-  const selectedDayEvents = selectedCell ? events[selectedCell.dateKey] || [] : [];
+  // --- Confirm Delete Handlers ---
+  const handleOpenDeleteDialog = (evt) => {
+    setDeleteTarget(evt);
+  };
+
+  const handleCloseDeleteDialog = () => {
+    setDeleteTarget(null);
+  };
+
+  const handleConfirmDelete = () => {
+    if (!deleteTarget) return;
+
+    deleteEvent(deleteTarget.id, {
+      onSuccess: () => {
+        handleCloseDeleteDialog();
+      },
+    });
+  };
+
+  const selectedDayEvents = selectedCell ? eventsByDate[selectedCell.dateKey] || [] : [];
 
   return (
     <div className="department-management">
@@ -213,46 +228,49 @@ const Calendar = () => {
           ))}
         </div>
 
-        <div className="calendar-grid">
-          {weeks.map((week) =>
-            week.map((cell) => {
-              const dayEvents = events[cell.dateKey] || [];
-              const isToday = cell.dateKey === todayKey;
+        {isLoading ? (
+          <div className="p-4 text-center text-muted">Loading calendar events...</div>
+        ) : (
+          <div className="calendar-grid">
+            {weeks.map((week) =>
+              week.map((cell) => {
+                const dayEvents = eventsByDate[cell.dateKey] || [];
+                const isToday = cell.dateKey === todayKey;
 
-              return (
-                <div
-                  key={cell.dateKey}
-                  className={`calendar-cell ${
-                    !cell.isCurrentMonth ? "calendar-cell-inactive" : ""
-                  } ${isToday ? "calendar-cell-today" : ""}`}
-                  onClick={() => handleCellClick(cell)}
-                  role="button"
-                  tabIndex={0}
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter" || e.key === " ") handleCellClick(cell);
-                  }}
-                >
-                  <span className={`calendar-day-number ${isToday ? "today-badge" : ""}`}>
-                    {cell.day}
-                  </span>
+                return (
+                  <div
+                    key={cell.dateKey}
+                    className={`calendar-cell ${
+                      !cell.isCurrentMonth ? "calendar-cell-inactive" : ""
+                    } ${isToday ? "calendar-cell-today" : ""}`}
+                    onClick={() => handleCellClick(cell)}
+                    role="button"
+                    tabIndex={0}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter" || e.key === " ") handleCellClick(cell);
+                    }}
+                  >
+                    <span className={`calendar-day-number ${isToday ? "today-badge" : ""}`}>
+                      {cell.day}
+                    </span>
 
-                  {/* DISPLAY ALL EVENTS ON SAME DAY */}
-                  <div className="calendar-events-container">
-                    {dayEvents.map((event, index) => (
-                      <span
-                        key={event.id || index}
-                        className={`event-pill event-pill-${event.type}`}
-                        title={event.title}
-                      >
-                        <span className="event-pill-title">{event.title}</span>
-                      </span>
-                    ))}
+                    <div className="calendar-events-container">
+                      {dayEvents.map((event, index) => (
+                        <span
+                          key={event.id || index}
+                          className={`event-pill event-pill-${event.type}`}
+                          title={event.title}
+                        >
+                          <span className="event-pill-title">{event.title}</span>
+                        </span>
+                      ))}
+                    </div>
                   </div>
-                </div>
-              );
-            })
-          )}
-        </div>
+                );
+              })
+            )}
+          </div>
+        )}
       </div>
 
       {/* Interactive Modal */}
@@ -293,13 +311,12 @@ const Calendar = () => {
                         </span>
                       </div>
 
-                      {/* CANCEL / DELETE EVENT BUTTON */}
                       <button
                         type="button"
                         className="btn btn-link text-danger p-0 border-0 ms-2"
-                        title="Cancel event"
-                        aria-label="Cancel event"
-                        onClick={() => handleDeleteEvent(evt.id)}
+                        title="Delete event"
+                        aria-label="Delete event"
+                        onClick={() => handleOpenDeleteDialog(evt)}
                       >
                         <FiTrash2 size={16} />
                       </button>
@@ -328,7 +345,7 @@ const Calendar = () => {
                 onClick={() => {
                   setNewEvent({
                     title: "",
-                    type: "event",
+                    type: "Event",
                     time: getCurrentTimeString(),
                     notes: "",
                   });
@@ -368,9 +385,9 @@ const Calendar = () => {
                     value={newEvent.type}
                     onChange={handleFormChange}
                   >
-                    <option value="event">Event</option>
-                    <option value="holiday">Holiday</option>
-                    <option value="birthday">Birthday</option>
+                    <option value="Event">Event</option>
+                    <option value="Holiday">Holiday</option>
+                    <option value="Birthday">Birthday</option>
                   </select>
                 </div>
 
@@ -378,7 +395,6 @@ const Calendar = () => {
                   <label className="form-label fw-semibold small text-secondary mb-1">
                     Time
                   </label>
-                  {/* ANYTIME SELECTOR */}
                   <input
                     type="time"
                     name="time"
@@ -412,13 +428,25 @@ const Calendar = () => {
               >
                 Cancel
               </Button>
-              <Button type="submit" variant="primary">
-                Save Event
+              <Button type="submit" variant="primary" disabled={isAdding}>
+                {isAdding ? "Saving..." : "Save Event"}
               </Button>
             </div>
           </form>
         )}
       </CommonModal>
+
+      {/* Delete Confirmation Modal */}
+      <ConfirmDialog
+        show={Boolean(deleteTarget)}
+        onClose={handleCloseDeleteDialog}
+        onConfirm={handleConfirmDelete}
+        title="Delete Event"
+        message={`Are you sure you want to delete "${deleteTarget?.title || "this event"}"? This action cannot be undone.`}
+        confirmText="Delete"
+        cancelText="Cancel"
+        isLoading={isDeleting}
+      />
     </div>
   );
 };

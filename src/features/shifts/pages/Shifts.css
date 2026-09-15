@@ -1,0 +1,141 @@
+.shift-management-container {
+  padding: 24px;
+  background-color: #f8fafc;
+  min-height: 100vh;
+  box-sizing: border-box;
+}
+
+/* Header layout: Title on left, Button on right */
+.shift-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.shift-title {
+  margin: 0;
+  font-size: 24px;
+  font-weight: 700;
+  color: #0f172a;
+}
+
+.shift-subtitle {
+  margin: 4px 0 0 0;
+  font-size: 14px;
+  color: #64748b;
+}
+
+/* Data Table Card Wrapper */
+.shift-table-card {
+  background: #ffffff;
+  border: 1px solid #e4e7ec;
+  border-radius: 10px;
+  overflow: hidden;
+  box-shadow: 0px 1px 3px rgba(16, 24, 40, 0.05);
+}
+
+/* Align Action Column */
+.cell-right {
+  text-align: right !important;
+}
+
+/* Shift Columns Styling */
+.shift-type-name {
+  font-weight: 600;
+  color: #0f172a;
+  font-size: 14px;
+}
+
+.shift-time-text {
+  font-size: 14px;
+  color: #334155;
+}
+
+/* Action Icon Buttons */
+.shift-actions-cell {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.shift-action-btn {
+  width: 32px;
+  height: 32px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 6px;
+  border: 1px solid #e2e8f0;
+  background-color: #ffffff;
+  color: #64748b;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.shift-action-btn.edit-btn:hover {
+  border-color: #00a8c9;
+  color: #00a8c9;
+  background-color: #f0fdfa;
+}
+
+.shift-action-btn.delete-btn:hover {
+  border-color: #ef4444;
+  color: #ef4444;
+  background-color: #fef2f2;
+}
+
+/* Modal Form Styles */
+.shift-form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.form-row {
+  display: flex;
+  gap: 12px;
+}
+
+.form-row .form-group {
+  flex: 1;
+}
+
+.form-label {
+  font-size: 13px;
+  font-weight: 600;
+  color: #344054;
+}
+
+.form-control {
+  height: 40px;
+  padding: 0 12px;
+  border: 1px solid #d0d5dd;
+  border-radius: 8px;
+  font-size: 14px;
+  color: #101828;
+  background-color: #ffffff;
+  outline: none;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.form-control:focus {
+  border-color: #00a8c9;
+  box-shadow: 0 0 0 3px rgba(0, 168, 201, 0.15);
+}
+
+@media (max-width: 480px) {
+  .form-row {
+    flex-direction: column;
+    gap: 16px;
+  }
+}

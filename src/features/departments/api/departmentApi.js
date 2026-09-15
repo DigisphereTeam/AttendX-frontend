@@ -35,7 +35,6 @@ export const getEmployeesByDepartment = async (id) => {
     return data
 }
 
-// Hooks
 export const useDepartments = () => {
   return useQuery({
     queryKey: ["departments"],

@@ -12,9 +12,10 @@ import Login from "../features/auth/pages/Login";
 import ProtectedRoute from "./ProtectedRoute";
 import LeaveManagement from "../features/leaves/pages/LeaveManagement";
 import EmployeeLeaves from "../features/leaves/pages/EmployeeLeaves";
-import Calendar from "../features/calendar/Calendar";
+import Calendar from "../features/calendar/pages/Calendar";
 import Expenditure from "../features/expenditure/pages/Expenditure";
-import ShiftManagement from "../features/shifts/pages/ShiftManagement";
+import Shifts from "../features/shifts/pages/Shifts";
+
 
 const App = () => {
   return (
@@ -40,7 +41,7 @@ const App = () => {
         <Route path="/leave-management" element={<LeaveManagement/>} />
         <Route path="/leaves" element={<EmployeeLeaves/>} />
         <Route path="/calendar" element={<Calendar/>} />
-        <Route path="/shifts" element={<ShiftManagement/>} />
+        <Route path="/shifts" element={<Shifts/>} />
         <Route path="/expenditure" element={<Expenditure/>} />
 
         <Route path="/reports" element={<Reports/>} />

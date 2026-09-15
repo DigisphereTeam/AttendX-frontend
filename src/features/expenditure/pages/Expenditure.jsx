@@ -1,119 +1,64 @@
 import { useMemo, useState } from "react";
 import { Row, Col, Form } from "react-bootstrap";
-import { FiPlus, FiCheck } from "react-icons/fi";
+import { FiPlus, FiCheck, FiEdit2, FiTrash2 } from "react-icons/fi";
 import toast from "react-hot-toast";
 
 import TablePagination from "../../../components/TablePagination/TablePagination";
 import TableToolbar from "../../../components/TableToolbar/TableToolbar";
 import DataTable from "../../../components/DataTable/DataTable";
 import CommonModal from "../../../components/CommonModal/CommonModal";
+import ConfirmDialog from "../../../components/ConfirmDialog/ConfirmDialog";
 import Button from "../../../components/Button/Button";
+
+import {
+  useExpenditures,
+  useAddExpenditure,
+  useUpdateExpenditure,
+  useDeleteExpenditure,
+} from "../api/expenditureApi";
 
 const PAYMENT_METHODS = ["UPI", "Bank Transfer", "Cash"];
 
-const Expenditure = () => {
-  const emptyExpenditure = {
-    title: "",
-    amount: "",
-    paymentMethod: "UPI",
-    date: "",
-    purpose: "",
-  };
+const EMPTY_FORM = {
+  id: null,
+  title: "",
+  amount: "",
+  paymentMethod: "UPI",
+  date: "",
+  purpose: "",
+};
 
-  const [expenditureForm, setExpenditureForm] = useState(emptyExpenditure);
+const Expenditure = () => {
+  const { data: rawExpenditures = [], isLoading } = useExpenditures();
+  const { mutate: handleAdd, isPending: isAdding } = useAddExpenditure();
+  const { mutate: handleUpdate, isPending: isUpdating } = useUpdateExpenditure();
+  const { mutate: handleDelete, isPending: isDeleting } = useDeleteExpenditure();
+
+  const [expenditureForm, setExpenditureForm] = useState(EMPTY_FORM);
   const [expenditureModal, setExpenditureModal] = useState(false);
+  const [deleteTarget, setDeleteTarget] = useState(null);
+
   const [filters, setFilters] = useState({
     search: "",
     paymentMethod: "",
   });
 
-  const [expenditures, setExpenditures] = useState([
-    {
-      expenditureId: 1,
-      title: "Office Rent",
-      amount: 25000,
-      paymentMethod: "Bank Transfer",
-      date: "2026-09-01",
-      purpose: "Monthly office rent payment",
-    },
-    {
-      expenditureId: 2,
-      title: "Internet Bill",
-      amount: 2499,
-      paymentMethod: "UPI",
-      date: "2026-09-02",
-      purpose: "Monthly broadband and internet charges",
-    },
-    {
-      expenditureId: 3,
-      title: "Office Supplies",
-      amount: 4850,
-      paymentMethod: "Cash",
-      date: "2026-09-03",
-      purpose: "Stationery, printer paper, pens and other supplies",
-    },
-    {
-      expenditureId: 4,
-      title: "Electricity Bill",
-      amount: 7320,
-      paymentMethod: "Bank Transfer",
-      date: "2026-09-04",
-      purpose: "Monthly electricity bill",
-    },
-    {
-      expenditureId: 5,
-      title: "Team Lunch",
-      amount: 3650,
-      paymentMethod: "UPI",
-      date: "2026-09-05",
-      purpose: "Team lunch and refreshments",
-    },
-    {
-      expenditureId: 6,
-      title: "Printer Maintenance",
-      amount: 1800,
-      paymentMethod: "Cash",
-      date: "2026-09-06",
-      purpose: "Printer servicing and maintenance",
-    },
-    {
-      expenditureId: 7,
-      title: "Travel Expenses",
-      amount: 6250,
-      paymentMethod: "UPI",
-      date: "2026-09-07",
-      purpose: "Local travel expenses for client meetings",
-    },
-    {
-      expenditureId: 8,
-      title: "Software Subscription",
-      amount: 4999,
-      paymentMethod: "Bank Transfer",
-      date: "2026-09-08",
-      purpose: "Monthly software and productivity tools subscription",
-    },
-    {
-      expenditureId: 9,
-      title: "Cleaning Services",
-      amount: 3200,
-      paymentMethod: "Cash",
-      date: "2026-09-09",
-      purpose: "Office cleaning and housekeeping services",
-    },
-    {
-      expenditureId: 10,
-      title: "Marketing Materials",
-      amount: 8750,
-      paymentMethod: "Bank Transfer",
-      date: "2026-09-10",
-      purpose: "Printing brochures, flyers and promotional materials",
-    },
-  ]);
-
   const [currentPage, setCurrentPage] = useState(1);
   const pageSize = 5;
 
-  // Handle form changes
+  // Normalize backend payload structure
+  const expenditures = useMemo(() => {
+    return rawExpenditures.map((item) => ({
+      expenditureId: item.expenditure_id,
+      title: item.title,
+      amount: item.amount,
+      paymentMethod: item.payment_method,
+      date: item.date ? item.date.split("T")[0] : "",
+      purpose: item.purpose || "",
+    }));
+  }, [rawExpenditures]);
+
+  // Form input handler
   const handleExpenditureChange = (e) => {
     const { name, value } = e.target;
     setExpenditureForm((prev) => ({
@@ -122,7 +67,134 @@ const Expenditure = () => {
     }));
   };
 
-  // Table columns
+  // Modal actions
+  const handleOpenCreateModal = () => {
+    setExpenditureForm(EMPTY_FORM);
+    setExpenditureModal(true);
+  };
+
+  const handleOpenEditModal = (row) => {
+    setExpenditureForm({
+      id: row.expenditureId,
+      title: row.title,
+      amount: row.amount,
+      paymentMethod: row.paymentMethod,
+      date: row.date,
+      purpose: row.purpose,
+    });
+    setExpenditureModal(true);
+  };
+
+  const handleCloseModal = () => {
+    setExpenditureModal(false);
+    setExpenditureForm(EMPTY_FORM);
+  };
+
+  // Delete modal actions
+  const handleOpenDeleteDialog = (row) => {
+    setDeleteTarget(row);
+  };
+
+  const handleCloseDeleteDialog = () => {
+    setDeleteTarget(null);
+  };
+
+  const handleConfirmDelete = () => {
+    if (!deleteTarget) return;
+
+    handleDelete(deleteTarget.expenditureId, {
+      onSuccess: () => handleCloseDeleteDialog(),
+    });
+  };
+
+  // Submit Handler (Create & Update)
+  const handleSaveExpenditure = (e) => {
+    e.preventDefault();
+
+    if (
+      !expenditureForm.title ||
+      !expenditureForm.amount ||
+      !expenditureForm.date ||
+      !expenditureForm.paymentMethod
+    ) {
+      toast.error("Please fill required fields");
+      return;
+    }
+
+    const numericAmount = Number(
+      String(expenditureForm.amount).replace(/[^0-9.]/g, "")
+    );
+
+    if (!numericAmount || numericAmount <= 0) {
+      toast.error("Please enter a valid amount");
+      return;
+    }
+
+    const payload = {
+      title: expenditureForm.title,
+      amount: numericAmount,
+      payment_method: expenditureForm.paymentMethod,
+      date: expenditureForm.date,
+      purpose: expenditureForm.purpose,
+    };
+
+    if (expenditureForm.id) {
+      handleUpdate(
+        { id: expenditureForm.id, data: payload },
+        { onSuccess: () => handleCloseModal() }
+      );
+    } else {
+      handleAdd(payload, {
+        onSuccess: () => {
+          setCurrentPage(1);
+          handleCloseModal();
+        },
+      });
+    }
+  };
+
+  // Filters and Search Logic
+  const handleFilterChange = (name, value) => {
+    setFilters((prev) => ({ ...prev, [name]: value }));
+    setCurrentPage(1);
+  };
+
+  const handleClearFilters = () => {
+    setFilters({ search: "", paymentMethod: "" });
+    setCurrentPage(1);
+  };
+
+  const filteredExpenditures = useMemo(() => {
+    return expenditures.filter((item) => {
+      const searchValue = filters.search.trim().toLowerCase();
+
+      const searchMatch =
+        !searchValue ||
+        item.title?.toLowerCase().includes(searchValue) ||
+        item.paymentMethod?.toLowerCase().includes(searchValue) ||
+        item.amount?.toString().includes(searchValue) ||
+        item.date?.toLowerCase().includes(searchValue) ||
+        item.purpose?.toLowerCase().includes(searchValue);
+
+      const paymentMatch =
+        !filters.paymentMethod ||
+        item.paymentMethod === filters.paymentMethod;
+
+      return searchMatch && paymentMatch;
+    });
+  }, [expenditures, filters]);
+
+  // Pagination Logic
+  const totalPages = Math.ceil(filteredExpenditures.length / pageSize) || 1;
+  const safeCurrentPage =
+    currentPage > totalPages ? totalPages : currentPage;
+
+  const paginatedExpenditures = useMemo(() => {
+    const startIndex = (safeCurrentPage - 1) * pageSize;
+    return filteredExpenditures.slice(startIndex, startIndex + pageSize);
+  }, [filteredExpenditures, safeCurrentPage, pageSize]);
+
+  // Table Columns Setup
   const columns = useMemo(
     () => [
       {
@@ -148,109 +220,35 @@ const Expenditure = () => {
         key: "purpose",
         header: "Purpose",
       },
+      {
+        key: "actions",
+        header: "Actions",
+        headerClassName: "cell-right",
+        cellClassName: "cell-right",
+        render: (row) => (
+          <div className="d-flex justify-content-end gap-2">
+            <button
+              type="button"
+              className="shift-action-btn edit-btn"
+              onClick={() => handleOpenEditModal(row)}
+              title="Edit Expenditure"
+            >
+              <FiEdit2 />
+            </button>
+            <button
+              type="button"
+              className="shift-action-btn delete-btn"
+              onClick={() => handleOpenDeleteDialog(row)}
+              title="Delete Expenditure"
+            >
+              <FiTrash2 />
+            </button>
+          </div>
+        ),
+      },
     ],
     []
   );
-
-  // Open Add Expenditure Modal
-  const handleOpenModal = () => {
-    setExpenditureForm({ ...emptyExpenditure });
-    setExpenditureModal(true);
-  };
-
-  // Close Add Expenditure Modal
-  const handleCloseModal = () => {
-    setExpenditureModal(false);
-    setExpenditureForm({ ...emptyExpenditure });
-  };
-
-  // Save Expenditure
-  const handleSaveExpenditure = (e) => {
-    e.preventDefault();
-
-    if (
-      !expenditureForm.title ||
-      !expenditureForm.amount ||
-      !expenditureForm.date ||
-      !expenditureForm.paymentMethod
-    ) {
-      toast.error("Please fill required fields");
-      return;
-    }
-
-    const amount = Number(
-      String(expenditureForm.amount).replace(/[^0-9.]/g, "")
-    );
-
-    if (!amount || amount <= 0) {
-      toast.error("Please enter a valid amount");
-      return;
-    }
-
-    const newExpenditure = {
-      expenditureId: Date.now(),
-      title: expenditureForm.title,
-      amount,
-      paymentMethod: expenditureForm.paymentMethod,
-      date: expenditureForm.date,
-      purpose: expenditureForm.purpose,
-    };
-
-    setExpenditures((prev) => [newExpenditure, ...prev]);
-    toast.success("Expenditure added successfully");
-    setCurrentPage(1);
-    handleCloseModal();
-  };
-
-  // Handle toolbar changes
-  const handleFilterChange = (name, value) => {
-    setFilters((prev) => ({
-      ...prev,
-      [name]: value,
-    }));
-    setCurrentPage(1);
-  };
-
-  // Clear all filters
-  const handleClearFilters = () => {
-    setFilters({
-      search: "",
-      paymentMethod: "",
-    });
-    setCurrentPage(1);
-  };
-
-  // Filter & Search Logic
-  const filteredExpenditures = useMemo(() => {
-    return expenditures.filter((item) => {
-      const searchValue = filters.search.trim().toLowerCase();
-
-      const searchMatch =
-        !searchValue ||
-        item.title?.toLowerCase().includes(searchValue) ||
-        item.paymentMethod?.toLowerCase().includes(searchValue) ||
-        item.amount?.toString().includes(searchValue) ||
-        item.date?.toLowerCase().includes(searchValue) ||
-        item.purpose?.toLowerCase().includes(searchValue);
-
-      const paymentMatch =
-        !filters.paymentMethod ||
-        item.paymentMethod === filters.paymentMethod;
-
-      return searchMatch && paymentMatch;
-    });
-  }, [expenditures, filters]);
-
-  // Pagination
-  const totalPages = Math.ceil(filteredExpenditures.length / pageSize);
-
-  const safeCurrentPage =
-    currentPage > totalPages ? totalPages || 1 : currentPage;
-
-  const paginatedExpenditures = useMemo(() => {
-    const startIndex = (safeCurrentPage - 1) * pageSize;
-    return filteredExpenditures.slice(startIndex, startIndex + pageSize);
-  }, [filteredExpenditures, safeCurrentPage]);
 
   return (
     <div className="employee-management">
@@ -259,7 +257,7 @@ const Expenditure = () => {
           <h1>Expenditure Management</h1>
           <p>Manage and track organization's expenditures.</p>
         </div>
-        <Button icon={FiPlus} onClick={handleOpenModal}>
+        <Button icon={FiPlus} onClick={handleOpenCreateModal}>
           Add Expenditure
         </Button>
       </div>
@@ -292,7 +290,7 @@ const Expenditure = () => {
         columns={columns}
         data={paginatedExpenditures}
         rowKey="expenditureId"
-        loading={false}
+        loading={isLoading}
         emptyMessage="No expenditures found."
       />
 
@@ -303,21 +301,27 @@ const Expenditure = () => {
           totalPages={totalPages}
           totalRecords={filteredExpenditures.length}
           pageSize={pageSize}
-          onPrevious={() => setCurrentPage((prev) => prev - 1)}
-          onNext={() => setCurrentPage((prev) => prev + 1)}
+          onPrevious={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+          onNext={() =>
+            setCurrentPage((prev) => Math.min(prev + 1, totalPages))
+          }
         />
       )}
 
-      {/* Add Expenditure Modal */}
+      {/* Add / Edit Expenditure Modal */}
       <CommonModal
         isOpen={expenditureModal}
         onClose={handleCloseModal}
-        title="Add Expenditure"
-        subtitle="Record a new organization expenditure."
+        title={expenditureForm.id ? "Edit Expenditure" : "Add Expenditure"}
+        subtitle={
+          expenditureForm.id
+            ? "Update existing expenditure details."
+            : "Record a new organization expenditure."
+        }
       >
         <form onSubmit={handleSaveExpenditure}>
           <div className="d-flex flex-column gap-3">
-            {/* Expenditure Title */}
+            {/* Title */}
             <div>
               <Form.Label className="form-label fw-semibold small text-secondary mb-1">
                 Title <span className="text-danger">*</span>
@@ -413,15 +417,33 @@ const Expenditure = () => {
               type="button"
               variant="secondary"
               onClick={handleCloseModal}
+              disabled={isAdding || isUpdating}
             >
               Cancel
             </Button>
-            <Button type="submit" variant="primary" icon={FiCheck}>
-              Save Expenditure
+            <Button
+              type="submit"
+              variant="primary"
+              icon={FiCheck}
+              disabled={isAdding || isUpdating}
+            >
+              {expenditureForm.id ? "Update Expenditure" : "Save Expenditure"}
             </Button>
           </div>
         </form>
       </CommonModal>
+
+      {/* Delete Confirmation Modal */}
+      <ConfirmDialog
+        show={Boolean(deleteTarget)}
+        onClose={handleCloseDeleteDialog}
+        onConfirm={handleConfirmDelete}
+        title="Delete Expenditure"
+        message={`Are you sure you want to delete "${deleteTarget?.title || "this item"}"? This action cannot be undone.`}
+        confirmText="Delete"
+        cancelText="Cancel"
+        isLoading={isDeleting}
+      />
     </div>
   );
 };
