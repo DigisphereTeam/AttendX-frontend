@@ -5,6 +5,7 @@ import CommonModal from "../../../components/CommonModal/CommonModal";
 import ConfirmDialog from "../../../components/ConfirmDialog/ConfirmDialog";
 import { FiPlus, FiEdit2, FiTrash2 } from "react-icons/fi";
 import Button from "../../../components/Button/Button";
+import { useAuth } from "../../auth/context/AuthContext"; 
 import {
   useShifts,
   useAddShift,
@@ -30,6 +31,8 @@ const EMPTY_FORM = {
 const PAGE_SIZE = 5;
 
 const Shifts = () => {
+  const { isAdmin } = useAuth(); 
+
   const { data: shifts = [], isLoading } = useShifts();
   const { mutate: handleAddShift, isPending: isAdding } = useAddShift();
   const { mutate: handleUpdateShift, isPending: isUpdating } = useUpdateShift();
@@ -113,65 +116,75 @@ const Shifts = () => {
     }
   };
 
-  const columns = [
-    {
-      key: "shiftType",
-      header: "Shift Type",
-      render: (row) => <span className="shift-type-name">{row.shiftType}</span>,
-    },
-    {
-      key: "fromTime",
-      header: "From Time",
-      render: (row) => <span className="shift-time-text">{row.fromTime}</span>,
-    },
-    {
-      key: "toTime",
-      header: "To Time",
-      render: (row) => <span className="shift-time-text">{row.toTime}</span>,
-    },
-    {
-      key: "actions",
-      header: "Actions",
-      headerClassName: "cell-right",
-      cellClassName: "cell-right",
-      render: (row) => (
-        <div className="shift-actions-cell">
-          <button
-            type="button"
-            className="shift-action-btn edit-btn"
-            onClick={() => handleOpenEditModal(row)}
-            title="Edit Shift"
-          >
-            <FiEdit2 />
-          </button>
-          <button
-            type="button"
-            className="shift-action-btn delete-btn"
-            onClick={() => handleOpenDeleteDialog(row)}
-            title="Delete Shift"
-          >
-            <FiTrash2 />
-          </button>
-        </div>
-      ),
-    },
-  ];
+  // Dynamically generate columns based on role
+  const columns = useMemo(() => {
+    const cols = [
+      {
+        key: "shiftType",
+        header: "Shift Type",
+        render: (row) => <span className="shift-type-name">{row.shiftType}</span>,
+      },
+      {
+        key: "fromTime",
+        header: "From Time",
+        render: (row) => <span className="shift-time-text">{row.fromTime}</span>,
+      },
+      {
+        key: "toTime",
+        header: "To Time",
+        render: (row) => <span className="shift-time-text">{row.toTime}</span>,
+      },
+    ];
+
+    // Only add Actions column for Admins
+    if (isAdmin) {
+      cols.push({
+        key: "actions",
+        header: "Actions",
+        headerClassName: "cell-right",
+        cellClassName: "cell-right",
+        render: (row) => (
+          <div className="shift-actions-cell">
+            <button
+              type="button"
+              className="shift-action-btn edit-btn"
+              onClick={() => handleOpenEditModal(row)}
+              title="Edit Shift"
+            >
+              <FiEdit2 />
+            </button>
+            <button
+              type="button"
+              className="shift-action-btn delete-btn"
+              onClick={() => handleOpenDeleteDialog(row)}
+              title="Delete Shift"
+            >
+              <FiTrash2 />
+            </button>
+          </div>
+        ),
+      });
+    }
+
+    return cols;
+  }, [isAdmin]);
 
   return (
     <div className="shift-management-container">
-      {/* Header Banner */}
+
       <div className="shift-header">
         <div>
           <h1 className="shift-title">Shift Management</h1>
           <p className="shift-subtitle">Manage schedule shift timings</p>
         </div>
 
-        <Button icon={FiPlus} onClick={handleOpenCreateModal}>
-          <span>New Shift</span>
-        </Button>
+        {isAdmin && (
+          <Button icon={FiPlus} onClick={handleOpenCreateModal}>
+            <span>New Shift</span>
+          </Button>
+        )}
       </div>
 
-      {/* Main Data Table & Pagination */}
       <div className="shift-table-card">
         <DataTable
           columns={columns}
@@ -193,7 +206,6 @@ const Shifts = () => {
         />
       </div>
 
-      {/* Modal Integration for Creating / Editing Shifts */}
       <CommonModal
         isOpen={isModalOpen}
         onClose={handleCloseModal}
@@ -211,7 +223,6 @@ const Shifts = () => {
         maxWidth="540px"
       >
         <form id="shift-form" onSubmit={handleFormSubmit} className="shift-form">
-          {/* Shifts Dropdown */}
           <div className="form-group">
             <label className="form-label">Shift Type *</label>
             <select
@@ -230,7 +241,6 @@ const Shifts = () => {
             </select>
           </div>
 
-          {/* From Time & To Time (Grid Row) */}
           <div className="form-row">
             <div className="form-group">
               <label className="form-label">From Time *</label>

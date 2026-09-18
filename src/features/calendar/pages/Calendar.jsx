@@ -17,6 +17,7 @@ import Button from "../../../components/Button/Button";
 import CommonModal from "../../../components/CommonModal/CommonModal";
 import ConfirmDialog from "../../../components/ConfirmDialog/ConfirmDialog";
 import { useEvents, useAddEvent, useDeleteEvent } from "../api/calendarApi";
+import { useAuth } from "../../auth/context/AuthContext";
 
 import "./Calendar.css";
 
@@ -36,6 +37,8 @@ const getCurrentTimeString = () => {
 };
 
 const Calendar = () => {
+  const { isAdmin } = useAuth(); // Auth context integration
+
   const [viewedDate, setViewedDate] = useState(new Date(2026, 8, 1));
   const { data: fetchedEvents = [], isLoading } = useEvents();
 
@@ -174,19 +177,19 @@ const Calendar = () => {
 
   return (
     <div className="department-management">
-      {/* Page Header */}
       <div className="department-content-header">
         <div>
           <h1>Calendar</h1>
           <p>Organization-wide holidays, events and birthdays.</p>
         </div>
 
-        <Button icon={FiPlus} onClick={handleOpenAddModal}>
-          Add event
-        </Button>
+        {isAdmin && (
+          <Button icon={FiPlus} onClick={handleOpenAddModal}>
+            Add event
+          </Button>
+        )}
       </div>
 
-      {/* Legend */}
       <div className="calendar-legend-card">
         {LEGEND_ITEMS.map((item) => (
           <span key={item.type} className="legend-item">
@@ -311,15 +314,18 @@ const Calendar = () => {
                         </span>
                       </div>
 
-                      <button
-                        type="button"
-                        className="btn btn-link text-danger p-0 border-0 ms-2"
-                        title="Delete event"
-                        aria-label="Delete event"
-                        onClick={() => handleOpenDeleteDialog(evt)}
-                      >
-                        <FiTrash2 size={16} />
-                      </button>
+                      {/* Visible only for Admin */}
+                      {isAdmin && (
+                        <button
+                          type="button"
+                          className="btn btn-link text-danger p-0 border-0 ms-2"
+                          title="Delete event"
+                          aria-label="Delete event"
+                          onClick={() => handleOpenDeleteDialog(evt)}
+                        >
+                          <FiTrash2 size={16} />
+                        </button>
+                      )}
                     </div>
 
                     {evt.time && (
@@ -338,22 +344,26 @@ const Calendar = () => {
               <Button type="button" variant="secondary" onClick={handleModalClose}>
                 Close
               </Button>
-              <Button
-                type="button"
-                variant="primary"
-                icon={FiPlus}
-                onClick={() => {
-                  setNewEvent({
-                    title: "",
-                    type: "Event",
-                    time: getCurrentTimeString(),
-                    notes: "",
-                  });
-                  setIsAddingEvent(true);
-                }}
-              >
-                Add Event
-              </Button>
+
+              {/* Visible only for Admin */}
+              {isAdmin && (
+                <Button
+                  type="button"
+                  variant="primary"
+                  icon={FiPlus}
+                  onClick={() => {
+                    setNewEvent({
+                      title: "",
+                      type: "Event",
+                      time: getCurrentTimeString(),
+                      notes: "",
+                    });
+                    setIsAddingEvent(true);
+                  }}
+                >
+                  Add Event
+                </Button>
+              )}
             </div>
           </div>
         ) : (
