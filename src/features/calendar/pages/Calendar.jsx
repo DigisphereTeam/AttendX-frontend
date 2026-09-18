@@ -436,7 +436,6 @@ const Calendar = () => {
         )}
       </CommonModal>
 
-      {/* Delete Confirmation Modal */}
       <ConfirmDialog
         show={Boolean(deleteTarget)}
         onClose={handleCloseDeleteDialog}

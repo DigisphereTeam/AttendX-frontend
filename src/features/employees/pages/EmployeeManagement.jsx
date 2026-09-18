@@ -35,7 +35,9 @@ const PAGE_SIZE = 10;
 
 const INITIAL_FORM_STATE = {
   employeeId: "",
+  empCode: "",
   name: "",
+  email: "",
   department: "",
   designation: "",
   phone: "",
@@ -52,7 +54,11 @@ const INITIAL_FILTERS = {
 const EmployeeManagement = () => {
   const navigate = useNavigate();
 
-  const {data = { employees: [], counts: {} }, isLoading, isError} = useEmployees();
+  const {
+    data = { employees: [], counts: {} },
+    isLoading,
+    isError,
+  } = useEmployees();
   const { employees = [], counts = {} } = data;
   const { data: departments = [] } = useDepartments();
 
@@ -60,7 +66,8 @@ const EmployeeManagement = () => {
   const updateEmployeeMutation = useUpdateEmployee();
   const deleteEmployeeMutation = useDeleteEmployee();
 
-  const [selectedEmployeeForDelete, setSelectedEmployeeForDelete] = useState(null);
+  const [selectedEmployeeForDelete, setSelectedEmployeeForDelete] =
+    useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingEmployee, setEditingEmployee] = useState(null);
   const [employeeForm, setEmployeeForm] = useState(INITIAL_FORM_STATE);
@@ -114,7 +121,7 @@ const EmployeeManagement = () => {
 
   const totalPages = Math.max(
     1,
-    Math.ceil(filteredEmployees.length / PAGE_SIZE)
+    Math.ceil(filteredEmployees.length / PAGE_SIZE),
   );
 
   const paginatedEmployees = useMemo(() => {
@@ -129,19 +136,21 @@ const EmployeeManagement = () => {
   };
 
   const handleOpenEditEmployee = useCallback((employee) => {
-  setEditingEmployee(employee);
+    setEditingEmployee(employee);
 
-  setEmployeeForm({
-    employeeId: String(employee.employeeId || ""),
-    name: String(employee.name || ""),
-    department: String(employee.departmentId || ""),
-    designation: String(employee.designation || ""),
-    phone: String(employee.phone || ""),
-    status: String(employee.status || ""),
-  });
+    setEmployeeForm({
+      employeeId: String(employee.employeeId || ""),
+      empCode: String(employee.empCode || ""),
+      name: String(employee.name || ""),
+      email: String(employee.email || ""),
+      department: String(employee.departmentId || ""),
+      designation: String(employee.designation || ""),
+      phone: String(employee.phone || ""),
+      status: String(employee.status || ""),
+    });
 
-  setIsModalOpen(true);
-}, []);
+    setIsModalOpen(true);
+  }, []);
 
   const handleCloseEmployeeModal = () => {
     setIsModalOpen(false);
@@ -152,21 +161,23 @@ const EmployeeManagement = () => {
   const handleSaveEmployee = (formData) => {
     const result = employeeSchema.safeParse(formData);
 
-  if (!result.success) {
-    const firstError = result.error.issues[0];
+    if (!result.success) {
+      const firstError = result.error.issues[0];
 
-    toast.error(firstError.message);
+      toast.error(firstError.message);
 
-    return;
-  }
+      return;
+    }
 
-  const payload = {
-    employee_name: formData.name,
-    department_id: Number(formData.department),
-    designation: formData.designation,
-    mobile_number: formData.phone,
-    status: formData.status,
-  };
+    const payload = {
+      employee_name: formData.name,
+      department_id: Number(formData.department),
+      designation: formData.designation,
+      mobile_number: formData.phone,
+      status: formData.status,
+      email: formData.email,
+      emp_code: formData.empCode,
+    };
 
     if (editingEmployee) {
       updateEmployeeMutation.mutate(
@@ -178,10 +189,10 @@ const EmployeeManagement = () => {
           },
           onError: (err) => {
             toast.error(
-              err?.response?.data?.message || "Failed to update employee."
+              err?.response?.data?.message || "Failed to update employee.",
             );
           },
-        }
+        },
       );
     } else {
       createEmployeeMutation.mutate(payload, {
@@ -191,7 +202,7 @@ const EmployeeManagement = () => {
         },
         onError: (err) => {
           toast.error(
-            err?.response?.data?.message || "Failed to create employee."
+            err?.response?.data?.message || "Failed to create employee.",
           );
         },
       });
@@ -204,7 +215,7 @@ const EmployeeManagement = () => {
         state: { selectedEmployee: employee.raw },
       });
     },
-    [navigate]
+    [navigate],
   );
 
   const handleOpenDeleteConfirm = useCallback((employee) => {
@@ -227,7 +238,7 @@ const EmployeeManagement = () => {
       },
       onError: (err) => {
         toast.error(
-          err?.response?.data?.message || "Failed to delete employee."
+          err?.response?.data?.message || "Failed to delete employee.",
         );
       },
     });
@@ -255,9 +266,17 @@ const EmployeeManagement = () => {
           </div>
         ),
       },
+      // {
+      //   key: "employeeId",
+      //   header: "Emp ID",
+      // },
       {
-        key: "employeeId",
-        header: "Emp ID",
+        key: "empCode",
+        header: "Emp Code",
+      },
+      {
+        key: "email",
+        header: "Email",
       },
       {
         key: "department",
@@ -332,11 +351,7 @@ const EmployeeManagement = () => {
         ),
       },
     ],
-    [
-      handleViewEmployee,
-      handleOpenEditEmployee,
-      handleOpenDeleteConfirm,
-    ]
+    [handleViewEmployee, handleOpenEditEmployee, handleOpenDeleteConfirm],
   );
 
   const toolbarFilters = useMemo(
@@ -371,7 +386,7 @@ const EmployeeManagement = () => {
         ],
       },
     ],
-    [departmentOptions]
+    [departmentOptions],
   );
 
   if (isError) {
@@ -383,9 +398,7 @@ const EmployeeManagement = () => {
   }
 
   if (isLoading) {
-    return (
-      <LoadingSpinner message="Loading Employee data" fullPage/>
-    );
+    return <LoadingSpinner message="Loading Employee data" fullPage />;
   }
 
   return (
@@ -395,11 +408,8 @@ const EmployeeManagement = () => {
           <h1>Employee Management</h1>
           <p>Manage your organization's employee records.</p>
         </div>
-        <Button
-          icon={FiPlus}
-          onClick={handleOpenAddEmployee}
-        >
-         Add Employee
+        <Button icon={FiPlus} onClick={handleOpenAddEmployee}>
+          Add Employee
         </Button>
       </div>
 

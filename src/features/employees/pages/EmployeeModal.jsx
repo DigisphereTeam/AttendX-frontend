@@ -59,6 +59,34 @@ const EmployeeModal = ({
             </div>
 
             <div className="form-group">
+              <label htmlFor="empCode">Employee Code</label>
+              <input
+                id="empCode"
+                name="empCode"
+                type="text"
+                placeholder="e.g. 240708"
+                value={formData?.empCode || ""}
+                onChange={handleChange}
+                disabled={isSubmitting}
+                required
+              />
+            </div>
+
+            <div className="form-group">
+              <label htmlFor="email">Email</label>
+              <input
+                id="email"
+                name="email"
+                type="email"
+                placeholder="e.g. employee@example.com"
+                value={formData?.email || ""}
+                onChange={handleChange}
+                disabled={isSubmitting}
+                required
+              />
+            </div>
+
+            <div className="form-group">
               <label htmlFor="department">Department</label>
               <div className="select-wrapper">
                 <select

@@ -38,13 +38,12 @@ export const useConfirmEnrollment = () => {
     },
   });
 };
-
 export const getDashboardAttendanceHistory = async (params) => {
   const queryParams = {
     search: params.search || undefined,
     status: params.status || undefined,
-    department_id: params.dept || undefined, // Mapped department filter parameter
-    department: params.dept || undefined,    // Alternative key fallback for backends expecting string name
+    department_id: params.dept || undefined,
+    department: params.dept || undefined,
     from_date: params.startDate || undefined,
     to_date: params.endDate || undefined,
     employee_id: params.empId || undefined,
@@ -61,27 +60,35 @@ export const useAttendanceHistory = (filters = {}) => {
     queryKey: ["attendanceHistory", filters],
     queryFn: () => getDashboardAttendanceHistory(filters),
     select: (response) => {
-      const rawList = response?.data || [];
+      const rawList = response?.data || response?.leaves || [];
 
-      const formattedList = rawList.map((item, index) => {
+      let formattedList = rawList.map((item, index) => {
         const targetDate = item.date || item.punchIn;
 
         return {
-          id: `${item.employeeId}-${index}`,
+          id: item.id || `${item.employeeId || "emp"}-${index}`,
           date: formatToUTCDate(targetDate),
-          empId: item.employeeId,
-          empName: item.employeeName || "N/A",
-          dept: item.department || "Unassigned",
-          punchIn: formatToUTCTime(item.punchIn),   // Outputs clean UTC time: "02:50 PM"
-          punchOut: formatToUTCTime(item.punchOut), // Outputs clean UTC time or "--"
+          empId: item.employeeId || item.employee_id,
+          empName: item.employeeName || item.employee_name || "N/A",
+          dept: item.department || item.department_name || "Unassigned",
+          punchIn: formatToUTCTime(item.punchIn),
+          punchOut: formatToUTCTime(item.punchOut),
           workingHours: item.workingHours || "—",
           status: item.status || "Present",
         };
       });
 
+      // Optional Client-side Fallback Filtering for Department
       if (filters.dept) {
-        return formattedList.filter(
-          (item) => item.dept.toLowerCase() === filters.dept.toLowerCase()
+        formattedList = formattedList.filter(
+          (item) => item.dept.toLowerCase() === String(filters.dept).toLowerCase()
+        );
+      }
+
+      // Optional Client-side Fallback Filtering for Employee ID
+      if (filters.empId) {
+        formattedList = formattedList.filter(
+          (item) => String(item.empId) === String(filters.empId)
         );
       }
 

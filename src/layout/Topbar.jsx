@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from "react";
 import {
   FiCalendar,
@@ -8,14 +7,38 @@ import {
   FiLogOut,
 } from "react-icons/fi";
 import { useNavigate } from "react-router-dom";
+import { useAuth } from "../features/auth/context/AuthContext";
+import Avatar from "../components/Avatar/Avatar";
 
-import { clearAuth } from "../features/auth/utils/authStorage";
+
 const Topbar = ({ onMenuClick, currentPath }) => {
   const [currentDate, setCurrentDate] = useState("");
   const [currentTime, setCurrentTime] = useState("");
   const [profileOpen, setProfileOpen] = useState(false);
 
   const navigate = useNavigate();
+  const { user, role, logoutUser } = useAuth();
+
+  // Extract display name from user object with fallbacks
+  const displayName =
+    user?.name ||
+    user?.fullName ||
+    user?.full_name ||
+    user?.employee_name ||
+    user?.username ||
+    user?.email ||
+    "User";
+
+  // Extract user role with fallback
+  const displayRole =
+    role ||
+    user?.role ||
+    user?.user_type ||
+    user?.designation ||
+    "Employee";
+
+  // Extract avatar image URL if available
+  const avatarSrc = user?.profile_pic || user?.avatar || user?.image || "";
 
   useEffect(() => {
     const updateDateTime = () => {
@@ -41,8 +64,8 @@ const Topbar = ({ onMenuClick, currentPath }) => {
   }, []);
 
   const handleLogout = () => {
-    // Clear token and user information
-    clearAuth();
+    // Clear context state and storage via context method
+    logoutUser();
 
     // Close profile dropdown
     setProfileOpen(false);
@@ -80,24 +103,20 @@ const Topbar = ({ onMenuClick, currentPath }) => {
           </span>
         </div>
 
-        {/* Admin Profile */}
+        {/* User Profile */}
         <div className="admin-profile-wrapper">
           <button
             type="button"
             className="admin-profile"
             onClick={() => setProfileOpen((prev) => !prev)}
           >
-            <div className="admin-avatar">
-              AD
-            </div>
+            <Avatar name={displayName} src={avatarSrc} size="small" />
 
             <div className="admin-info">
-              <div className="admin-name">
-                Admin User
-              </div>
+              <div className="admin-name">{displayName}</div>
 
-              <div className="admin-role">
-                HR Administrator
+              <div className="admin-role" style={{ textTransform: "capitalize" }}>
+                {displayRole}
               </div>
             </div>
 
@@ -128,4 +147,3 @@ const Topbar = ({ onMenuClick, currentPath }) => {
 };
 
 export default Topbar;
-

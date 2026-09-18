@@ -5,7 +5,8 @@ import TableToolbar from "../../../components/TableToolbar/TableToolbar";
 import DataTable from "../../../components/DataTable/DataTable";
 import TablePagination from "../../../components/TablePagination/TablePagination";
 import { useAttendanceHistory } from "../api/biometricApi";
-import { useDepartments } from "../../departments/api/departmentApi"
+import { useDepartments } from "../../departments/api/departmentApi";
+import { useAuth } from "../../auth/context/AuthContext";
 
 function useDebounce(value, delay = 500) {
   const [debouncedValue, setDebouncedValue] = useState(value);
@@ -22,6 +23,13 @@ function useDebounce(value, delay = 500) {
 }
 
 export default function AttendanceHistory({ departments: propDepartments = [] }) {
+  // 1. Destructure values directly from AuthContext
+  const { user, isAdmin, isEmployee } = useAuth();
+
+  // Retrieve employee ID using common backend keys
+  const currentEmployeeId =
+    user?.employee_id || user?.emp_id || user?.id || user?.employeeId;
+
   // 2. Separate UI state for input forms from query parameters
   const [filterValues, setFilterValues] = useState({
     search: "",
@@ -34,22 +42,26 @@ export default function AttendanceHistory({ departments: propDepartments = [] })
   const [currentPage, setCurrentPage] = useState(1);
   const pageSize = 10;
 
-  // 3. Debounce only the search term
+  // 3. Debounce search input
   const debouncedSearch = useDebounce(filterValues.search, 500);
 
-  // 4. Construct query filters using debounced search (dropdowns update instantly)
+  // 4. Construct query filters (passes empId only for non-admin/employee view)
   const queryFilters = useMemo(
     () => ({
       ...filterValues,
       search: debouncedSearch,
+      empId: isEmployee ? currentEmployeeId : undefined,
     }),
-    [filterValues, debouncedSearch]
+    [filterValues, debouncedSearch, isEmployee, currentEmployeeId]
   );
 
-  const { data: historyList = [], isLoading: isLoadingHistory } = useAttendanceHistory(queryFilters);
+  const { data: historyList = [], isLoading: isLoadingHistory } =
+    useAttendanceHistory(queryFilters);
 
-  const { data: fetchedDepartments = [], isLoading: isLoadingDepts } = useDepartments();
-  const departmentsList = propDepartments.length > 0 ? propDepartments : fetchedDepartments;
+  const { data: fetchedDepartments = [], isLoading: isLoadingDepts } =
+    useDepartments();
+  const departmentsList =
+    propDepartments.length > 0 ? propDepartments : fetchedDepartments;
 
   const handleFilterChange = useCallback((name, value) => {
     setFilterValues((prev) => ({ ...prev, [name]: value }));
@@ -67,22 +79,33 @@ export default function AttendanceHistory({ departments: propDepartments = [] })
     setCurrentPage(1);
   }, []);
 
-  const filterConfig = useMemo(
-    () => [
-      {
-        name: "search",
-        type: "search",
-        placeholder: "Search employee...",
-      },
-      {
-        name: "dept",
-        type: "select",
-        placeholder: isLoadingDepts ? "Loading departments..." : "All Departments",
-        options: departmentsList.map((d) => ({
-          label: d.name || d.department_name,
-          value: d.name || d.department_name,
-        })),
-      },
+  // 5. Configurable Table Toolbar (Hides Employee Search & Department filter for Employees)
+  const filterConfig = useMemo(() => {
+    const filters = [];
+
+    // Only Admins get employee search and department selection
+    if (isAdmin) {
+      filters.push(
+        {
+          name: "search",
+          type: "search",
+          placeholder: "Search employee...",
+        },
+        {
+          name: "dept",
+          type: "select",
+          placeholder: isLoadingDepts
+            ? "Loading departments..."
+            : "All Departments",
+          options: departmentsList.map((d) => ({
+            label: d.name || d.department_name,
+            value: d.id || d.department_id || d.name || d.department_name,
+          })),
+        }
+      );
+    }
+
+    filters.push(
       {
         name: "status",
         type: "select",
@@ -100,10 +123,11 @@ export default function AttendanceHistory({ departments: propDepartments = [] })
       {
         name: "endDate",
         type: "date",
-      },
-    ],
-    [departmentsList, isLoadingDepts]
-  );
+      }
+    );
+
+    return filters;
+  }, [isAdmin, departmentsList, isLoadingDepts]);
 
   const totalRecords = historyList.length;
   const totalPages = Math.ceil(totalRecords / pageSize) || 1;
@@ -113,26 +137,33 @@ export default function AttendanceHistory({ departments: propDepartments = [] })
     return historyList.slice(start, start + pageSize);
   }, [historyList, currentPage, pageSize]);
 
-  const columns = useMemo(
-    () => [
-      { key: "date", header: "DATE" },
-      {
-        key: "empName",
-        header: "EMPLOYEE",
-        render: (row) => (
-          <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-            <Avatar name={row.empName} size="small" />
-            <span style={{ fontWeight: 500, color: "#101828" }}>
-              {row.empName}
-            </span>
-          </div>
-        ),
-      },
-      {
-        key: "dept",
-        header: "DEPARTMENT",
-        render: (row) => <Badge variant="info">{row.dept}</Badge>,
-      },
+  // 6. Dynamic Columns (Hides Employee Name and Department columns when viewing own records)
+  const columns = useMemo(() => {
+    const cols = [{ key: "date", header: "DATE" }];
+
+    if (isAdmin) {
+      cols.push(
+        {
+          key: "empName",
+          header: "EMPLOYEE",
+          render: (row) => (
+            <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+              <Avatar name={row.empName} size="small" />
+              <span style={{ fontWeight: 500, color: "#101828" }}>
+                {row.empName}
+              </span>
+            </div>
+          ),
+        },
+        {
+          key: "dept",
+          header: "DEPARTMENT",
+          render: (row) => <Badge variant="info">{row.dept}</Badge>,
+        }
+      );
+    }
+
+    cols.push(
       {
         key: "punchIn",
         header: "PUNCH IN",
@@ -158,23 +189,30 @@ export default function AttendanceHistory({ departments: propDepartments = [] })
 
           return <Badge variant={variant}>{row.status}</Badge>;
         },
-      },
-    ],
-    []
-  );
+      }
+    );
+
+    return cols;
+  }, [isAdmin]);
 
   return (
     <div className="attendance-history-card">
       <div className="department-content-header">
         <div>
-          <h1>Attendance History</h1>
-          <p>Employee-wise and department-wise attendance records</p>
+          <h1>
+            {isAdmin ? "Attendance History" : "My Attendance History"}
+          </h1>
+          <p>
+            {isAdmin
+              ? "Employee-wise and department-wise attendance records"
+              : "View your personal attendance history and clock-in logs"}
+          </p>
         </div>
       </div>
 
       <TableToolbar
         filters={filterConfig}
-        values={filterValues} 
+        values={filterValues}
         onChange={handleFilterChange}
         onClear={handleClearFilters}
       />

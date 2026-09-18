@@ -19,7 +19,8 @@ const EmployeeDetails = () => {
 
   // 1. Fetch data
   const { data: employeesData, isLoading: isEmployeeLoading } = useEmployees();
-  const { data: attendanceData, isLoading: isAttendanceLoading } = useEmployeeAttendance(id);
+  const { data: attendanceData, isLoading: isAttendanceLoading } =
+    useEmployeeAttendance(id);
 
   const {
     employeeName: attendanceEmpName,
@@ -28,50 +29,52 @@ const EmployeeDetails = () => {
     attendanceList = [],
   } = attendanceData || {};
 
- // Clean, minimal resolution logic
-const employee = useMemo(() => {
-  const cleanId = String(id).replace(/^EMP-/i, "").trim();
+  // Clean, minimal resolution logic
+  const employee = useMemo(() => {
+    const cleanId = String(id).replace(/^EMP-/i, "").trim();
 
-  // 1. Search inside employees API response (already mapped by select)
-  const foundEmp = employeesData?.employees?.find(
-    (emp) =>
-      String(emp.id) === cleanId ||
-      String(emp.employeeId).toUpperCase() === String(id).toUpperCase()
-  );
+    // 1. Search inside employees API response (already mapped by select)
+    const foundEmp = employeesData?.employees?.find(
+      (emp) =>
+        String(emp.id) === cleanId ||
+        String(emp.employeeId).toUpperCase() === String(id).toUpperCase(),
+    );
 
-  if (foundEmp) return foundEmp;
+    if (foundEmp) return foundEmp;
 
-  // 2. Fallback to route state if user navigated directly with state
-  if (location.state?.selectedEmployee) {
-    return location.state.selectedEmployee;
-  }
+    // 2. Fallback to route state if user navigated directly with state
+    if (location.state?.selectedEmployee) {
+      return location.state.selectedEmployee;
+    }
 
-  // 3. Last fallback: basic object from Attendance API
-  if (attendanceEmpName || attendanceEmpId) {
-    return {
-      name: attendanceEmpName,
-      employeeId: attendanceEmpId ? `EMP-${attendanceEmpId}` : `EMP-${id}`,
-      designation: "N/A",
-      departmentName: "Unassigned",
-      phone: "N/A",
-      status: "Active",
-      fingerprintRegistered: false,
-    };
-  }
+    // 3. Last fallback: basic object from Attendance API
+    if (attendanceEmpName || attendanceEmpId) {
+      return {
+        name: attendanceEmpName,
+        employeeId: attendanceEmpId ? `EMP-${attendanceEmpId}` : `EMP-${id}`,
+        designation: "N/A",
+        departmentName: "Unassigned",
+        phone: "N/A",
+        status: "Active",
+        fingerprintRegistered: false,
+      };
+    }
 
-  return null;
-}, [employeesData, id, location.state, attendanceEmpName, attendanceEmpId]);
+    return null;
+  }, [employeesData, id, location.state, attendanceEmpName, attendanceEmpId]);
 
   // Extract variables with defaults for clean JSX
   const {
-  name = "N/A",
-  employeeId: displayId = id ? `EMP-${id}` : "N/A",
-  designation = "N/A",
-  departmentName = "Unassigned",
-  phone = "N/A",
-  status = "Active",
-  fingerprintRegistered = false,
-} = employee || {};
+    name = "N/A",
+    employeeId: displayId = id ? `EMP-${id}` : "N/A",
+    empCode = "N/A",
+    email = "N/A",
+    designation = "N/A",
+    departmentName = "Unassigned",
+    phone = "N/A",
+    status = "Active",
+    fingerprintRegistered = false,
+  } = employee || {};
 
   // Table Columns
   const attendanceColumns = useMemo(
@@ -88,13 +91,13 @@ const employee = useMemo(() => {
             row.status === "Present"
               ? "success"
               : row.status === "Late"
-              ? "warning"
-              : "danger";
+                ? "warning"
+                : "danger";
           return <Badge variant={variant}>{row.status}</Badge>;
         },
       },
     ],
-    []
+    [],
   );
 
   // Pagination Logic
@@ -120,7 +123,7 @@ const employee = useMemo(() => {
       {/* Top Header */}
       <div className="department-employees-header mb-4">
         <h1>
-          {name} ({displayId})
+          {name} ({empCode})
         </h1>
         <button
           type="button"
@@ -143,8 +146,18 @@ const employee = useMemo(() => {
 
             <div className="w-100 border-top mt-4 pt-3 text-start">
               <div className="d-flex justify-content-between align-items-center mb-3">
-                <span className="text-muted small">Employee ID</span>
-                <span className="fw-bold text-dark">{displayId}</span>
+                <span className="text-muted small">Employee Code</span>
+                <span className="fw-bold text-dark">{empCode}</span>
+              </div>
+
+              <div className="d-flex justify-content-between align-items-start mb-3">
+                <span className="text-muted small">Email</span>
+                <span
+                  className="fw-bold text-dark text-end ms-3"
+                  style={{ overflowWrap: "anywhere" }}
+                >
+                  {email}
+                </span>
               </div>
               <div className="d-flex justify-content-between align-items-center mb-3">
                 <span className="text-muted small">Phone</span>
@@ -183,7 +196,9 @@ const employee = useMemo(() => {
           <div className="card border-0 rounded-4 p-4 shadow-sm bg-white overflow-hidden">
             <h5 className="fw-bold text-dark mb-3">Attendance History</h5>
             {isAttendanceLoading ? (
-              <div className="text-center py-4 text-muted">Loading attendance...</div>
+              <div className="text-center py-4 text-muted">
+                Loading attendance...
+              </div>
             ) : (
               <>
                 <DataTable
@@ -198,7 +213,9 @@ const employee = useMemo(() => {
                   totalRecords={totalRecords}
                   pageSize={PAGE_SIZE}
                   onPrevious={() => setCurrentPage((p) => Math.max(p - 1, 1))}
-                  onNext={() => setCurrentPage((p) => Math.min(p + 1, totalPages))}
+                  onNext={() =>
+                    setCurrentPage((p) => Math.min(p + 1, totalPages))
+                  }
                 />
               </>
             )}

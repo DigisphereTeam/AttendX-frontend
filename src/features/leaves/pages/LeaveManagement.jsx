@@ -20,82 +20,25 @@ import {
   getFinancialYearRange,
 } from "../../../utils/financialYear";
 
+import { useAllLeaves, useUpdateLeaveStatus } from "../api/leaveApi";
+
 import "./EmployeeLeaves.css";
 
 const PAGE_SIZE = 10;
 
-const MOCK_HR_LEAVES = [
-  {
-    id: 1,
-    employeeName: "Karthik Iyer",
-    employeeCode: "ENG-4028",
-    department: "Engineering",
-    leaveType: "Sick Leave",
-    duration: "2 days",
-    dateRange: "Sep 8 – Sep 9, 2026",
-    startDate: "2026-09-08",
-    endDate: "2026-09-09",
-    reason: "Viral fever & medical rest",
-    appliedOn: "Sep 07, 2026",
-    status: "Pending",
-  },
-  {
-    id: 2,
-    employeeName: "Divya Menon",
-    employeeCode: "DES-1092",
-    department: "Design Ops",
-    leaveType: "Casual Leave",
-    duration: "1 day",
-    dateRange: "Sep 10, 2026",
-    startDate: "2026-09-10",
-    endDate: "2026-09-10",
-    reason: "Personal work",
-    appliedOn: "Sep 08, 2026",
-    status: "Pending",
-  },
-  {
-    id: 3,
-    employeeName: "Priya Nair",
-    employeeCode: "FIN-2104",
-    department: "Finance",
-    leaveType: "Earned Leave",
-    duration: "3 days",
-    dateRange: "Sep 15 – Sep 17, 2026",
-    startDate: "2026-09-15",
-    endDate: "2026-09-17",
-    reason: "Family event",
-    appliedOn: "Sep 05, 2026",
-    status: "Rejected",
-  },
-  {
-    id: 4,
-    employeeName: "Vikram Sen",
-    employeeCode: "OPS-8901",
-    department: "Operations",
-    leaveType: "Casual Leave",
-    duration: "1 day",
-    dateRange: "Sep 2, 2026",
-    startDate: "2026-09-02",
-    endDate: "2026-09-02",
-    reason: "Medical appointment",
-    appliedOn: "Aug 30, 2026",
-    status: "Approved",
-  },
-  {
-    id: 5,
-    employeeName: "Anita Rao",
-    employeeCode: "HR-0034",
-    department: "Human Capital",
-    leaveType: "Sick Leave",
-    duration: "2 days",
-    dateRange: "Aug 28 – Aug 29, 2026",
-    startDate: "2026-08-28",
-    endDate: "2026-08-29",
-    reason: "Severe migraine",
-    appliedOn: "Aug 27, 2026",
-    status: "Approved",
-  },
-];
+const formatDateRange = (fromDate, toDate) => {
+  if (!fromDate || !toDate) return "N/A";
+  const start = new Date(fromDate).toLocaleDateString("en-US", {
+    month: "short",
+    day: "2-digit",
+  });
+  const end = new Date(toDate).toLocaleDateString("en-US", {
+    month: "short",
+    day: "2-digit",
+    year: "numeric",
+  });
+  return `${start} – ${end}`;
+};
 
 const getBadgeVariant = (status) => {
   switch (status) {
@@ -111,7 +54,11 @@ const getBadgeVariant = (status) => {
 };
 
 const LeaveManagement = () => {
-  const [leaves, setLeaves] = useState(MOCK_HR_LEAVES);
+  const { data: apiResponse, isLoading } = useAllLeaves();
+  const updateLeaveStatusMutation = useUpdateLeaveStatus();
+
+  const rawLeaves = apiResponse?.leaves || [];
+  const dashboardStats = apiResponse?.dashboard || {};
 
   // --- Financial Year & Filter State ---
   const currentFY = useMemo(() => getCurrentFinancialYear(), []);
@@ -140,42 +87,52 @@ const LeaveManagement = () => {
     setPage(1);
   };
 
-  // --- Actions for HR: Approve or Reject ---
-  const handleApprove = (id) => {
-    setLeaves((prev) =>
-      prev.map((item) => (item.id === id ? { ...item, status: "Approved" } : item))
-    );
+  // --- Actions for Admin: Approve or Reject ---
+  const handleApprove = (leave) => {
+    const leaveId = leave.leave_id || leave.id || leave._id;
+    updateLeaveStatusMutation.mutate({
+      leave_id: leaveId,
+      leaveId: leaveId,
+      status: "Approved",
+    });
   };
 
-  const handleReject = (id) => {
-    setLeaves((prev) =>
-      prev.map((item) => (item.id === id ? { ...item, status: "Rejected" } : item))
-    );
+  const handleReject = (leave) => {
+    const leaveId = leave.leave_id || leave.id || leave._id;
+    updateLeaveStatusMutation.mutate({
+      leave_id: leaveId,
+      leaveId: leaveId,
+      status: "Rejected",
+    });
   };
 
   // --- Data Computation ---
   const leavesInSelectedFY = useMemo(() => {
     const range = getFinancialYearRange(filterValues.financialYear);
-    if (!range) return leaves;
+    if (!range) return rawLeaves;
 
-    return leaves.filter(
-      (leave) => leave.startDate >= range.start && leave.startDate <= range.end
-    );
-  }, [leaves, filterValues.financialYear]);
+    return rawLeaves.filter((leave) => {
+      const leaveStartDate = leave.from_date ? leave.from_date.split("T")[0] : "";
+      return leaveStartDate >= range.start && leaveStartDate <= range.end;
+    });
+  }, [rawLeaves, filterValues.financialYear]);
 
   const filteredLeaves = useMemo(() => {
     const search = filterValues.search.toLowerCase();
 
     return leavesInSelectedFY.filter((leave) => {
+      const name = leave.employee_name || "";
+      const code = leave.emp_code || "";
+      const leaveType = leave.leave_type || "";
+
       const matchesSearch =
         !search ||
-        leave.employeeName.toLowerCase().includes(search) ||
-        leave.employeeCode.toLowerCase().includes(search) ||
-        leave.department.toLowerCase().includes(search) ||
-        leave.leaveType.toLowerCase().includes(search);
+        name.toLowerCase().includes(search) ||
+        code.toLowerCase().includes(search) ||
+        leaveType.toLowerCase().includes(search);
 
       const matchesLeaveType =
-        !filterValues.leaveType || leave.leaveType === filterValues.leaveType;
+        !filterValues.leaveType || leave.leave_type === filterValues.leaveType;
 
       const matchesStatus =
         !filterValues.status || leave.status === filterValues.status;
@@ -196,121 +153,141 @@ const LeaveManagement = () => {
 
   const totalPages = Math.max(1, Math.ceil(filteredLeaves.length / PAGE_SIZE));
 
-  // --- HR Dashboard Stat Calculations ---
-  const totalRequests = leavesInSelectedFY.length;
-  const pendingApprovals = leavesInSelectedFY.filter(
-    (l) => l.status === "Pending"
-  ).length;
-  const approvedLeaves = leavesInSelectedFY.filter(
-    (l) => l.status === "Approved"
-  ).length;
-  const rejectedLeaves = leavesInSelectedFY.filter(
-    (l) => l.status === "Rejected"
-  ).length;
-
   // --- Table Columns ---
-  const columns = [
-    {
-      key: "employee",
-      header: "EMPLOYEE",
-      render: (row) => (
-        <div>
-          <div className="leave-title">{row.employeeName}</div>
-          <div className="leave-subtext">
-            {row.employeeCode} · {row.department}
+  const columns = useMemo(
+    () => [
+      {
+        key: "employee",
+        header: "EMPLOYEE",
+        render: (row) => (
+          <div>
+            <div className="leave-title">{row.employee_name || "N/A"}</div>
+            <div className="leave-subtext">
+              {row.emp_code ? `Code: ${row.emp_code}` : `ID: ${row.employee_id}`}
+            </div>
           </div>
-        </div>
-      ),
-    },
-    {
-      key: "leaveType",
-      header: "LEAVE TYPE",
-      render: (row) => <span className="text-bold">{row.leaveType}</span>,
-    },
-    {
-      key: "duration",
-      header: "DURATION",
-      render: (row) => <span className="text-bold">{row.duration}</span>,
-    },
-    {
-      key: "dateRange",
-      header: "DATE RANGE",
-      render: (row) => <span className="text-bold">{row.dateRange}</span>,
-    },
-    {
-      key: "status",
-      header: "STATUS",
-      render: (row) => (
-        <Badge variant={getBadgeVariant(row.status)}>
-          <span className="status-dot">●</span> {row.status}
-        </Badge>
-      ),
-    },
-    {
-      key: "actions",
-      header: "ACTIONS",
-      render: (row) => (
-        <div style={{ display: "flex", gap: "8px", alignItems: "center" }}>
-          <button
-            type="button"
-            className="action-view-btn"
-            style={{ color: "#16a34a" }}
-            aria-label="Approve leave"
-            title="Approve"
-            onClick={() => handleApprove(row.id)}
-          >
-            <FiCheck />
-          </button>
-          <button
-            type="button"
-            className="action-view-btn"
-            style={{ color: "#dc2626" }}
-            aria-label="Reject leave"
-            title="Reject"
-            onClick={() => handleReject(row.id)}
-          >
-            <FiX />
-          </button>
-        </div>
-      ),
-    },
-  ];
+        ),
+      },
+      {
+        key: "leave_type",
+        header: "LEAVE TYPE",
+        render: (row) => <span className="text-bold">{row.leave_type}</span>,
+      },
+      {
+        key: "duration",
+        header: "DURATION",
+        render: (row) => (
+          <span className="text-bold">
+            {row.duration} {Number(row.duration) === 1 ? "day" : "days"}
+          </span>
+        ),
+      },
+      {
+        key: "dateRange",
+        header: "DATE RANGE",
+        render: (row) => (
+          <span className="text-bold">
+            {formatDateRange(row.from_date, row.to_date)}
+          </span>
+        ),
+      },
+      {
+        key: "description",
+        header: "REASON",
+        render: (row) => <span className="text-muted">{row.description || "N/A"}</span>,
+      },
+      {
+        key: "status",
+        header: "STATUS",
+        render: (row) => (
+          <Badge variant={getBadgeVariant(row.status)}>
+            <span className="status-dot">●</span> {row.status}
+          </Badge>
+        ),
+      },
+      {
+        key: "actions",
+        header: "ACTIONS",
+        render: (row) => {
+          const isPending = row.status === "Pending";
+          const isActionDisabled = updateLeaveStatusMutation.isPending;
+
+          return (
+            <div style={{ display: "flex", gap: "8px", alignItems: "center" }}>
+              <button
+                type="button"
+                className="action-view-btn"
+                style={{
+                  color: isPending ? "#16a34a" : "#cbd5e1",
+                  cursor: isPending && !isActionDisabled ? "pointer" : "not-allowed",
+                }}
+                aria-label="Approve leave"
+                title="Approve"
+                disabled={!isPending || isActionDisabled}
+                onClick={() => handleApprove(row)}
+              >
+                <FiCheck />
+              </button>
+              <button
+                type="button"
+                className="action-view-btn"
+                style={{
+                  color: isPending ? "#dc2626" : "#cbd5e1",
+                  cursor: isPending && !isActionDisabled ? "pointer" : "not-allowed",
+                }}
+                aria-label="Reject leave"
+                title="Reject"
+                disabled={!isPending || isActionDisabled}
+                onClick={() => handleReject(row)}
+              >
+                <FiX />
+              </button>
+            </div>
+          );
+        },
+      },
+    ],
+    [updateLeaveStatusMutation.isPending]
+  );
 
   // --- Toolbar Filter Config ---
-  const filterConfig = [
-    {
-      type: "search",
-      name: "search",
-      placeholder: "Search by employee name...",
-    },
-    {
-      type: "select",
-      name: "leaveType",
-      placeholder: "All Leave Types",
-      options: [
-        { label: "Sick Leave", value: "Sick Leave" },
-        { label: "Casual Leave", value: "Casual Leave" },
-        { label: "Earned Leave", value: "Earned Leave" },
-        { label: "Optional Holidays", value: "Optional Holidays" },
-      ],
-    },
-    {
-      type: "select",
-      name: "status",
-      placeholder: "All Status",
-      options: [
-        { label: "Pending", value: "Pending" },
-        { label: "Approved", value: "Approved" },
-        { label: "Rejected", value: "Rejected" },
-      ],
-    },
-    {
-      type: "select",
-      name: "financialYear",
-      placeholder: "Select FY",
-      options: financialYearOptions,
-    },
-  ];
+  const filterConfig = useMemo(
+    () => [
+      {
+        type: "search",
+        name: "search",
+        placeholder: "Search employee name or code...",
+      },
+      {
+        type: "select",
+        name: "leaveType",
+        placeholder: "All Leave Types",
+        options: [
+          { label: "Sick Leave", value: "Sick Leave" },
+          { label: "Casual Leave", value: "Casual Leave" },
+          { label: "Earned Leave", value: "Earned Leave" },
+          { label: "Optional Holidays", value: "Optional Holidays" },
+        ],
+      },
+      {
+        type: "select",
+        name: "status",
+        placeholder: "All Status",
+        options: [
+          { label: "Pending", value: "Pending" },
+          { label: "Approved", value: "Approved" },
+          { label: "Rejected", value: "Rejected" },
+        ],
+      },
+      {
+        type: "select",
+        name: "financialYear",
+        placeholder: "Select FY",
+        options: financialYearOptions,
+      },
+    ],
+    [financialYearOptions]
+  );
 
   return (
     <div className="department-management">
@@ -322,10 +299,26 @@ const LeaveManagement = () => {
       </div>
 
       <div className="leaves-stats-grid">
-        <StatCard title="TOTAL REQUESTS" value={totalRequests} icon={FiCalendar} />
-        <StatCard title="PENDING APPROVALS" value={pendingApprovals} icon={FiClock} />
-        <StatCard title="APPROVED LEAVES" value={approvedLeaves} icon={FiCheckCircle} />
-        <StatCard title="REJECTED LEAVES" value={rejectedLeaves} icon={FiXCircle} />
+        <StatCard
+          title="TOTAL REQUESTS"
+          value={dashboardStats.total_requests ?? 0}
+          icon={FiCalendar}
+        />
+        <StatCard
+          title="PENDING APPROVALS"
+          value={dashboardStats.pending_approvals ?? 0}
+          icon={FiClock}
+        />
+        <StatCard
+          title="APPROVED LEAVES"
+          value={dashboardStats.approved_leaves ?? 0}
+          icon={FiCheckCircle}
+        />
+        <StatCard
+          title="REJECTED LEAVES"
+          value={dashboardStats.rejected_leaves ?? 0}
+          icon={FiXCircle}
+        />
       </div>
 
       <div className="leaves-table-card">
@@ -336,16 +329,26 @@ const LeaveManagement = () => {
           onClear={handleClearFilters}
         />
 
-        <DataTable columns={columns} data={paginatedLeaves} rowKey="id" />
+        {isLoading ? (
+          <div className="text-center py-5 text-muted">Loading leave requests...</div>
+        ) : (
+          <>
+            <DataTable
+              columns={columns}
+              data={paginatedLeaves}
+              rowKey="leave_id"
+            />
 
-        <TablePagination
-          page={page}
-          totalPages={totalPages}
-          totalRecords={filteredLeaves.length}
-          pageSize={PAGE_SIZE}
-          onPrevious={() => setPage((p) => Math.max(p - 1, 1))}
-          onNext={() => setPage((p) => Math.min(p + 1, totalPages))}
-        />
+            <TablePagination
+              page={page}
+              totalPages={totalPages}
+              totalRecords={filteredLeaves.length}
+              pageSize={PAGE_SIZE}
+              onPrevious={() => setPage((p) => Math.max(p - 1, 1))}
+              onNext={() => setPage((p) => Math.min(p + 1, totalPages))}
+            />
+          </>
+        )}
       </div>
     </div>
   );

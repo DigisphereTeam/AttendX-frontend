@@ -1,6 +1,7 @@
 import { NavLink } from "react-router-dom";
 import { FiBarChart2, FiCalendar, FiDollarSign, FiGrid, FiLayers, FiRepeat, FiUsers, FiX } from "react-icons/fi";
 import { FaCalendarTimes, FaClipboardCheck, FaFingerprint } from "react-icons/fa";
+import { useAuth } from "../features/auth/context/AuthContext";
 import logo from "../assets/logo-digi.png";
 
 const navigation = [
@@ -8,60 +9,78 @@ const navigation = [
     label: "Dashboard",
     path: "/dashboard",
     icon: FiGrid,
+    allowedRoles: ["admin"],
   },
   {
     label: "Employee Management",
     path: "/employees",
     icon: FiUsers,
+    allowedRoles: ["admin"],
   },
   {
     label: "Department Management",
     path: "/departments",
     icon: FiLayers,
+    allowedRoles: ["admin"],
   },
   // {
   //   label: "Biometric Enrollment",
   //   path: "/biometrics",
   //   icon: FaFingerprint,
+  //   allowedRoles: ["admin"],
   // },
   {
     label: "Attendance History",
     path: "/attendance-history",
     icon: FaClipboardCheck,
+    allowedRoles: ["admin", "employee"],
   },
-   {
+  {
     label: "Leave Management",
     path: "/leave-management",
     icon: FaCalendarTimes,
+    allowedRoles: ["admin"],
   },
   {
     label: "My Leaves",
     path: "/leaves",
     icon: FaCalendarTimes,
+    allowedRoles: ["employee"],
   },
-   {
+  {
     label: "Shift Management",
     path: "/shifts",
     icon: FiRepeat,
+    allowedRoles: ["admin", "employee"],
   },
-   {
+  {
     label: "Expenditure",
     path: "/expenditure",
     icon: FiDollarSign,
+    allowedRoles: ["admin"],
   },
   {
     label: "Calendar",
     path: "/calendar",
     icon: FiCalendar,
+    allowedRoles: ["admin", "employee"],
   },
   {
     label: "Reports",
     path: "/reports",
     icon: FiBarChart2,
+    allowedRoles: ["admin"],
   },
 ];
 
 const Sidebar = ({ isOpen, onClose }) => {
+  const { role } = useAuth();
+  const userRole = role?.toLowerCase();
+ 
+  const filteredNav = navigation.filter((item) =>
+    item.allowedRoles.includes(userRole)
+  );
+
   return (
     <>
       <aside className={`app-sidebar ${isOpen ? "show" : ""}`}>
@@ -81,7 +100,7 @@ const Sidebar = ({ isOpen, onClose }) => {
         </div>
 
         <nav className="sidebar-nav">
-          {navigation.map((item) => {
+          {filteredNav.map((item) => {
             const Icon = item.icon;
 
             return (

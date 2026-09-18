@@ -99,6 +99,7 @@ export const useEmployeesByDepartment = (id) => {
             return rawList.map((emp)=>({
                 id: emp.employee_id,
                 employeeId: `EMP-${emp.employee_id}`,
+                empCode: emp.emp_code || "N/A",
                 name: emp.employee_name || "N/A",
                 designation: emp.designation || "N/A",
                 status: emp.status || "Active",

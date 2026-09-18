@@ -92,6 +92,10 @@ const DepartmentEmployees = () => {
       width: "18%",
     },
     {
+        key: "empCode",
+        header: "Emp Code",
+      },
+    {
       key: "designation",
       header: "Designation",
       width: "22%",

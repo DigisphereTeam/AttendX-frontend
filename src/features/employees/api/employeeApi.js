@@ -7,7 +7,7 @@ const EMPLOYEE_ENDPOINTS = {
   CREATE: "/employee/addemployeewithdevice",
   UPDATE: (id) => `/employee/edit-employee-with-device/${id}`,
   DELETE: (id) => `/employee/delete-employee-with-device/${id}`,
-  GET_BY_ID: (employeeId) => `/attendence/monthlyattendance/${employeeId}`
+  GET_BY_ID: (employeeId) => `/attendence/monthlyattendance/${employeeId}`,
 };
 
 export const getEmployees = async () => {
@@ -21,12 +21,17 @@ export const createEmployee = async (payload) => {
 };
 
 export const updateEmployee = async ({ id, payload }) => {
-  const { data } = await axiosInstance.put(EMPLOYEE_ENDPOINTS.UPDATE(id), payload);
+  const { data } = await axiosInstance.put(
+    EMPLOYEE_ENDPOINTS.UPDATE(id),
+    payload,
+  );
   return data;
 };
 
 export const deleteEmployee = async (id) => {
-  const { data } = await axiosInstance.delete(EMPLOYEE_ENDPOINTS.DELETE(id) , {data:{}} );
+  const { data } = await axiosInstance.delete(EMPLOYEE_ENDPOINTS.DELETE(id), {
+    data: {},
+  });
   return data;
 };
 
@@ -43,26 +48,33 @@ export const useEmployees = () => {
     select: (response) => {
       const rawList = response?.employees || [];
       const counts = response?.counts || {
-        total_employees:0,
-        active_employees:0,
-        inactive_employees:0,
-        fp_registered:0,
-        fp_not_registered:0,
-      }
+        total_employees: 0,
+        active_employees: 0,
+        inactive_employees: 0,
+        fp_registered: 0,
+        fp_not_registered: 0,
+      };
 
       const employees = rawList.map((emp) => ({
         id: emp.employee_id,
         employeeId: `EMP-${emp.employee_id}`,
+        empCode: emp.emp_code || "N/A",
         name: emp.employee_name || "N/A",
+        email: emp.email || "N/A",
         departmentId: emp.department_id,
-        departmentName: emp.department_name || (emp.department_id ? `Dept #${emp.department_id}` : "Unassigned"),
+        departmentName:
+          emp.department_name ||
+          (emp.department_id ? `Dept #${emp.department_id}` : "Unassigned"),
         designation: emp.designation || "N/A",
         phone: emp.mobile_number || "N/A",
-        status: emp.status ? emp.status.charAt(0).toUpperCase() + emp.status.slice(1) : "Inactive",
-        fingerprintRegistered: emp.fingerprint_status?.toLowerCase().trim() === "registered",
+        status: emp.status
+          ? emp.status.charAt(0).toUpperCase() + emp.status.slice(1)
+          : "Inactive",
+        fingerprintRegistered:
+          emp.fingerprint_status?.toLowerCase().trim() === "registered",
         raw: emp,
       }));
-      return{ employees, counts}
+      return { employees, counts };
     },
   });
 };
@@ -119,14 +131,19 @@ export const useEmployeeAttendance = (employeeId) => {
     queryFn: () => getEmployeeAttendance(employeeId),
     enabled: Boolean(employeeId),
     select: (response) => {
-      const summary = response?.summary || { present: 0, late: 0, absent: 0, total_marked_days: 0 };
+      const summary = response?.summary || {
+        present: 0,
+        late: 0,
+        absent: 0,
+        total_marked_days: 0,
+      };
       const rawList = response?.data || [];
 
       const attendanceList = rawList.map((item, index) => ({
         id: index + 1,
         date: formatToUTCDate(item.attendance_date || item.punch_in),
-        punchIn: formatToUTCTime(item.punch_in),   
-        punchOut: formatToUTCTime(item.punch_out), 
+        punchIn: formatToUTCTime(item.punch_in),
+        punchOut: formatToUTCTime(item.punch_out),
         hrs: item.work_hours || "—",
         status: item.status || (item.is_late ? "Late" : "Present"),
       }));
@@ -140,4 +157,3 @@ export const useEmployeeAttendance = (employeeId) => {
     },
   });
 };
-
